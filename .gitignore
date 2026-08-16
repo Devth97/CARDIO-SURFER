@@ -5,3 +5,4 @@ dist/
 .env
 .env.*
 npm-debug.log*
+.worktrees/
