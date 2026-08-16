@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #0d0e12;
+  color: #f2f2f5;
+  overscroll-behavior: none;
+}
+
+#root {
+  width: 100%;
+  max-width: none;
+  border: none;
+}
+
+button {
+  font: inherit;
+}
