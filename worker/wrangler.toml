@@ -1,0 +1,12 @@
+name = "subway-fit-api"
+main = "src/index.ts"
+compatibility_date = "2026-08-16"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "subway-fit-db"
+database_id = "REPLACE_AFTER_WRANGLER_D1_CREATE"
+
+[vars]
+ALLOWED_ORIGIN = "http://localhost:5173"
+FIREBASE_PROJECT_ID = "REPLACE_WITH_FIREBASE_PROJECT_ID"
