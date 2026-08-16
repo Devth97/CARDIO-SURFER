@@ -338,7 +338,13 @@ git commit -m "worker: add ISO week-id helper for weekly leaderboard reset"
 - Create: `worker/src/plausibility.ts`
 - Test: `worker/test/plausibility.test.ts`
 
-Per TRD §5, these are generous sanity bounds, not gameplay simulation. Bounds are derived from the game's own constants (`src/game/constants.ts` and the calorie formula in `src/game/GameEngine.ts` in the frontend project): max distance rate is `MAX_SPEED (1.05) * METERS_PER_SPEED_UNIT_PER_SEC (12) = 12.6 m/s`; with the ×2 star-powerup multiplier and `SCORE_PER_METER = 1`, that's ~25.2 score/sec from distance alone, plus coin bonuses — so a ceiling of 40 score/sec (plus a flat allowance for short bursts) is generous, not tight. The calorie formula (`distanceM*0.065 + jumps*0.2 + ducks*0.32 + laneChanges*0.08`) tops out around 3.6 cal/sec even at the game's fastest-possible input rates, so 5 cal/sec is a generous ceiling.
+Per TRD §5, these are generous sanity bounds, not gameplay simulation. Bounds are derived from the game's own constants (`src/game/constants.ts` and `src/game/GameEngine.ts` in the frontend project — read-only reference, not part of the worker).
+
+**Score ceiling — must account for both distance *and* coin income, not distance alone.** An earlier draft of this derivation only counted distance-based scoring (`MAX_SPEED (1.05) * METERS_PER_SPEED_UNIT_PER_SEC (12) = 12.6 m/s`, * `SCORE_PER_METER (1)` = ~12.6 score/sec, doubled to ~25.2/sec with the ×2 star multiplier) and hand-waved "plus coin bonuses" without quantifying them — that undercounted coins badly enough that ordinary skilled play (not even best-possible play) could exceed the ceiling and be wrongly rejected. Working through the actual coin math from `GameEngine.ts`: obstacle/coin waves spawn every `SPAWN_INTERVAL_MIN_MS` (680ms) at max speed (~1.47 waves/sec); `spawnCoinRun()` fires on ~50% of waves with 3-5 coins (average 4, see `count = 3 + Math.floor(Math.random() * 3)`), giving ~2.94 coins/sec expected value; at `SCORE_PER_COIN = 25` that's ~73.5 score/sec from coins alone (1x, no star multiplier) — before adding the ~12.6/sec from distance. Sustained combined is therefore ~86/sec. (The star multiplier can roughly double the coin term while active, but star uptime is short/bounded relative to a full run, so the *sustained* per-second rate over a realistic run stays close to the 1x figure.) `MAX_SCORE_PER_SEC = 110` leaves comfortable headroom above that ~86/sec estimate for RNG variance, plus a flat `SCORE_BURST_ALLOWANCE = 100` on top for short/early runs.
+
+**Calorie ceiling.** The calorie formula (`distanceM*0.065 + jumps*0.2 + ducks*0.32 + laneChanges*0.08`) tops out around 3.6 cal/sec even at the game's fastest-possible input rates, so `MAX_CALORIES_PER_SEC = 5` is a generous ceiling.
+
+**Duration ceiling — needed to prevent the ceilings above from being bypassed entirely.** Because both ceilings scale linearly with `durationSec`, a forged submission can defeat them just by claiming a huge `durationSec` (e.g. `{ score: 40_000_000, calories: 1, durationSec: 1_000_000 }` would pass without a cap). `MAX_DURATION_SEC = 3600` (1 hour) rejects any submission claiming a session longer than that — generous for a legitimate single endless-runner session, since nothing legitimate plays one uninterrupted session longer than an hour.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -355,6 +361,16 @@ describe('isPlausibleRun', () => {
 
   it('accepts a short but modest run', () => {
     expect(isPlausibleRun({ score: 50, calories: 3, durationSec: 5 })).toBe(true);
+  });
+
+  it('accepts a coin-heavy realistic run (regression guard for the coin-income gap)', () => {
+    // A skilled 60-second run sustaining close to max speed: distance score
+    // ~12.6/sec plus coin income from a normal (not exceptional) share of
+    // spawned coin runs — roughly the ~86/sec combined rate derived in
+    // plausibility.ts from src/game/constants.ts + GameEngine.ts. This is
+    // well above the old (flawed) 40/sec ceiling, which would have wrongly
+    // rejected it — that's exactly the bug this test guards against.
+    expect(isPlausibleRun({ score: 4800, calories: 45, durationSec: 60 })).toBe(true);
   });
 
   it('rejects a negative score', () => {
@@ -375,6 +391,22 @@ describe('isPlausibleRun', () => {
 
   it('rejects a run shorter than the minimum plausible duration', () => {
     expect(isPlausibleRun({ score: 5, calories: 0, durationSec: 0.2 })).toBe(false);
+  });
+
+  it('rejects a run longer than the maximum plausible duration', () => {
+    expect(isPlausibleRun({ score: 100, calories: 5, durationSec: 3601 })).toBe(false);
+  });
+
+  it('rejects a forged submission that claims a huge durationSec to bypass the score/calorie ceilings', () => {
+    // Without an upper bound on durationSec, score/calorie ceilings (which
+    // scale linearly with duration) can be defeated by simply claiming an
+    // enormous session length. This is the exact forged example from the
+    // code review that originally slipped through.
+    expect(isPlausibleRun({ score: 40_000_000, calories: 1, durationSec: 1_000_000 })).toBe(false);
+  });
+
+  it('accepts a plausible run right at the maximum duration boundary', () => {
+    expect(isPlausibleRun({ score: 100, calories: 5, durationSec: 3600 })).toBe(true);
   });
 
   it('rejects non-finite input', () => {
@@ -399,15 +431,59 @@ Expected: FAIL — module not found.
 ```typescript
 import type { RunSubmission } from './types';
 
-const MAX_SCORE_PER_SEC = 40;
+// These are generous sanity bounds, not gameplay simulation (TRD §5). Every
+// constant below is derived from the frontend's real game constants/engine
+// (`src/game/constants.ts` and `src/game/GameEngine.ts` at the repo root,
+// read-only reference — not part of this worker) so a future maintainer can
+// tell these are load-bearing derivations, not arbitrary round numbers.
+//
+// MAX_SCORE_PER_SEC — must cover BOTH scoring sources at max speed:
+//   - Distance: MAX_SPEED (1.05) * METERS_PER_SPEED_UNIT_PER_SEC (12) = 12.6 m/s,
+//     * SCORE_PER_METER (1) = ~12.6 score/sec.
+//   - Coins: waves spawn every SPAWN_INTERVAL_MIN_MS (680ms) at max speed
+//     => ~1.47 waves/sec. spawnCoinRun() fires on ~50% of waves with 3-5
+//     coins (average 4, see GameEngine.spawnCoinRun) => ~2.94 coins/sec
+//     expected value, * SCORE_PER_COIN (25) = ~73.5 score/sec.
+//   Sustained combined (1x, no star multiplier) is therefore ~86/sec. The
+//   ×2 star-powerup multiplier can roughly double the coin term while
+//   active, but star uptime is short/bounded relative to a full run, so the
+//   *sustained* per-second rate over a realistic run stays close to the 1x
+//   figure. 110/sec leaves comfortable headroom above the ~86/sec estimate
+//   for RNG variance (e.g. runs of unusually generous coin luck) without
+//   reopening the door to forged high-score submissions.
+const MAX_SCORE_PER_SEC = 110;
+
+// Flat allowance so very short/early runs (before the per-second rate has
+// "warmed up", plus rounding) aren't rejected at the boundary. Not derived
+// from a game formula — just a small fixed buffer on top of the per-second
+// ceiling above.
 const SCORE_BURST_ALLOWANCE = 100;
+
+// Calorie formula (GameEngine.ts): distanceM*0.065 + jumps*0.2 + ducks*0.32
+// + laneChanges*0.08. At max speed (12.6 m/s) that's ~0.82 cal/sec from
+// distance alone; even stacking the fastest possible input rates the game
+// allows (JUMP_DURATION_MS=450ms, DUCK_MIN_HOLD_MS=180ms,
+// LANE_CHANGE_MS=140ms) on top only brings the theoretical ceiling to
+// ~3.6 cal/sec. 5 cal/sec is a generous ceiling above that.
 const MAX_CALORIES_PER_SEC = 5;
+
+// A run has to last at least this long to be a real play session rather
+// than a rounding/replay artifact.
 const MIN_DURATION_SEC = 1;
+
+// Without an upper bound, a forged submission could claim an arbitrarily
+// large durationSec to inflate the score/calorie ceilings (which scale
+// linearly with duration) past any real value — e.g. `durationSec:
+// 1_000_000` would let a score of 40,000,000 through. 3600 (1 hour) is a
+// generous ceiling for a single endless-runner session; nothing legitimate
+// plays one uninterrupted session longer than that.
+const MAX_DURATION_SEC = 3600;
 
 export function isPlausibleRun({ score, calories, durationSec }: RunSubmission): boolean {
   if (![score, calories, durationSec].every(Number.isFinite)) return false;
   if (score < 0 || calories < 0) return false;
   if (durationSec < MIN_DURATION_SEC) return false;
+  if (durationSec > MAX_DURATION_SEC) return false;
   if (score > durationSec * MAX_SCORE_PER_SEC + SCORE_BURST_ALLOWANCE) return false;
   if (calories > durationSec * MAX_CALORIES_PER_SEC) return false;
   return true;
@@ -420,7 +496,7 @@ export function isPlausibleRun({ score, calories, durationSec }: RunSubmission):
 cd worker && npx vitest run test/plausibility.test.ts
 ```
 
-Expected: PASS, 8/8 cases.
+Expected: PASS, 12/12 cases.
 
 - [ ] **Step 5: Commit**
 
