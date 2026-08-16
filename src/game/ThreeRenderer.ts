@@ -7,9 +7,19 @@ import type { Coin, Obstacle, PowerUpItem } from './types';
 // fully on screen on a portrait phone frame. Obstacle/rail widths are scaled
 // to match so nothing from an adjacent lane visually overlaps.
 const LANE_X_POSITIONS = [-1.7, 0, 1.7];
-const CAMERA_HEIGHT = 4.4; // Elevated chase-cam (Subway Surfers reference: high enough to look OVER adjacent-lane obstacles instead of the view going dark when two obstacles sit side by side)
+// Camera height is a real tradeoff, not a stylistic choice: with the player only ~8 world units
+// from the camera and standing ~2.6 units tall, a same-lane "duck" hurdle (only ~1 unit tall) is
+// geometrically swallowed by the player's own silhouette unless the camera sits well above the
+// player's head height. Below ~3.5 the hurdle is only a fraction-of-a-pixel sliver even when it's
+// still far away — not a usable warning. This value keeps a duck obstacle visibly poking above the
+// player for a meaningful stretch of its approach, not just in the final instant before collision.
+// (Now safe to raise without re-breaking the "two side-by-side obstacles black out a 3rd lane"
+// case — that was actually caused by the camera never following the player's lane, fixed below.)
+const CAMERA_HEIGHT = 4.6;
 const CAMERA_WORLD_Z = 1.5; // Pulled well back from the runner so the character reads small against a wide forward view, not filling the frame
 const PLAYER_WORLD_Z = -6.5; // Player positioned 8 world units in front of the camera
+const CAMERA_LOOKAT_Y = -3.2; // Downward tilt target height
+const CAMERA_LOOKAT_Z = -18.0; // Downward tilt target distance
 const HORIZON_WORLD_Z = -80.0; // Far horizon position for oncoming obstacles
 const JUMP_VISUAL_HEIGHT = 1.4; // Peak jump rise in world units — tall enough to read as a jump, short enough to stay in frame
 
@@ -184,7 +194,7 @@ export class ThreeRenderer {
     const { width: renderWidth, height: renderHeight } = this.computeRenderSize();
     this.camera = new THREE.PerspectiveCamera(65, renderWidth / renderHeight, 0.1, 1000);
     this.camera.position.set(0, CAMERA_HEIGHT, CAMERA_WORLD_Z);
-    this.camera.lookAt(0, -4.5, -16.0);
+    this.camera.lookAt(0, CAMERA_LOOKAT_Y, CAMERA_LOOKAT_Z);
 
     // 3. WebGL Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -538,6 +548,13 @@ export class ThreeRenderer {
     // 1. Synchronize 3D Jake Player Position & Animations
     const targetX = LANE_X_POSITIONS[Math.round(playerState.displayLane)];
     this.playerGroup.position.x = THREE.MathUtils.lerp(this.playerGroup.position.x, targetX, 0.3);
+
+    // Follow the player's lane with the camera. Without this the camera stays
+    // nailed to world X=0 forever — so switching to a side lane still looks
+    // straight down the CENTER lane, meaning obstacles in lanes that aren't
+    // even the player's own can dominate the frame and black out the view.
+    this.camera.position.x = this.playerGroup.position.x;
+    this.camera.lookAt(this.playerGroup.position.x, CAMERA_LOOKAT_Y, CAMERA_LOOKAT_Z);
     this.playerGroup.position.z = PLAYER_WORLD_Z; // Anchored at Z = -6.5 (4.5 units in front of camera at Z = -2.0)
 
     // Jump Arc & Duck Crouch
