@@ -29,6 +29,12 @@ export async function insertRun(
     .run();
 }
 
+// u.display_name/u.avatar_url are selected without aggregation despite the
+// GROUP BY r.uid: this is safe because users.uid is a PRIMARY KEY, so every
+// row in a given uid group joins to the same single users row — these
+// columns can't vary within a group. Relies on SQLite's bare-column GROUP
+// BY extension; would need explicit MIN()/MAX() wrapping on a stricter SQL
+// engine (e.g. Postgres).
 export async function getLeaderboard(
   db: D1Database,
   scope: 'weekly' | 'alltime',
