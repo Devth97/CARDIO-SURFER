@@ -25,9 +25,14 @@ async function requireUser(request: Request, env: Env) {
   }
   try {
     return await verifyFirebaseToken(token, env.FIREBASE_PROJECT_ID);
-  } catch {
+  } catch (err) {
+    console.error('token verification failed:', err);
     throw json({ error: 'invalid token' }, 401, env.ALLOWED_ORIGIN);
   }
+}
+
+function parseLimit(url: URL): number {
+  return Math.min(Math.max(Number(url.searchParams.get('limit')) || 50, 1), 100);
 }
 
 export default {
@@ -54,14 +59,14 @@ export default {
 
       if (url.pathname === '/leaderboard' && request.method === 'GET') {
         const scope = url.searchParams.get('scope') === 'alltime' ? 'alltime' : 'weekly';
-        const limit = Math.min(Number(url.searchParams.get('limit')) || 50, 100);
+        const limit = parseLimit(url);
         const result = await getLeaderboardRoute(env, scope, limit);
         return json(result, 200, env.ALLOWED_ORIGIN);
       }
 
       if (url.pathname === '/me/history' && request.method === 'GET') {
         const user = await requireUser(request, env);
-        const limit = Math.min(Number(url.searchParams.get('limit')) || 50, 100);
+        const limit = parseLimit(url);
         const result = await getMyHistoryRoute(env, user.uid, limit);
         return json(result, 200, env.ALLOWED_ORIGIN);
       }
