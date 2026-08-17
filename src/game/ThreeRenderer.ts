@@ -93,36 +93,6 @@ function createTrainTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-function createFreightTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
-
-  ctx.fillStyle = '#e65100';
-  ctx.fillRect(0, 0, 512, 512);
-
-  ctx.fillStyle = '#ff9800';
-  for (let x = 0; x < 512; x += 32) {
-    ctx.fillRect(x, 0, 14, 512);
-  }
-
-  ctx.fillStyle = '#bf360c';
-  ctx.fillRect(0, 0, 512, 30);
-  ctx.fillRect(0, 482, 512, 30);
-  ctx.fillRect(0, 0, 30, 512);
-  ctx.fillRect(482, 0, 30, 512);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 64px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('CARDIO FIT', 256, 256);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
-}
-
 function createChevronTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -169,7 +139,6 @@ export class ThreeRenderer {
 
   // Cached Textures
   private trainTexture = createTrainTexture();
-  private freightTexture = createFreightTexture();
   private chevronTexture = createChevronTexture();
 
   private clock = new THREE.Clock();
@@ -459,19 +428,23 @@ export class ThreeRenderer {
     return group;
   }
 
-  private createOrangeFreightCarMesh(): THREE.Group {
+  private createDuckWarningBarrierMesh(): THREE.Group {
     const group = new THREE.Group();
 
     // This is the 'high' obstacle type — cleared by ducking, not by jumping
     // or switching lanes. Ducking scales the player group to 0.6x height
     // around its y=0 base, so a ducking player's head sits at roughly
-    // 2.15 * 0.6 ≈ 1.3; standing head height is ~2.15-2.24. The support
-    // posts and beam below are sized to leave open space under y≈1.6 (clear
-    // for a ducking player) while blocking y≈1.6-2.3 (hits a standing
-    // player) — an actual gap to duck under, not a ground-to-roof solid box
-    // indistinguishable from the 'full' (must-switch-lanes) obstacle.
-    const postGeo = new THREE.BoxGeometry(0.2, 1.6, 0.2);
-    const postMat = new THREE.MeshStandardMaterial({ color: '#5d4037' });
+    // 2.15 * 0.6 ≈ 1.3; standing head height is ~2.15-2.24. The posts and
+    // panel below are sized to leave open space under y≈1.6 (clear for a
+    // ducking player) while blocking y≈1.6-2.2 (hits a standing player).
+    //
+    // Styled as a railway warning barrier rather than a plain beam — the
+    // red/white chevron panel (reusing the same texture as the 'low'
+    // hurdle) and end lights read as "hazard, duck now" at a glance, and
+    // the wide flat panel gives it a distinct silhouette from the 'full'
+    // obstacle's train-car shape even at a distance.
+    const postGeo = new THREE.BoxGeometry(0.22, 1.6, 0.22);
+    const postMat = new THREE.MeshStandardMaterial({ color: '#3e3e42', metalness: 0.4, roughness: 0.6 });
     const postL = new THREE.Mesh(postGeo, postMat);
     postL.position.set(-0.62, 0.8, 0);
     group.add(postL);
@@ -480,13 +453,24 @@ export class ThreeRenderer {
     postR.position.set(0.62, 0.8, 0);
     group.add(postR);
 
-    // Orange Overhead Beam with Textured Panel Ribs & Logo
-    const beamGeo = new THREE.BoxGeometry(1.15, 0.7, 1.4);
-    const beamMat = new THREE.MeshStandardMaterial({ map: this.freightTexture, roughness: 0.6 });
-    const beam = new THREE.Mesh(beamGeo, beamMat);
-    beam.position.y = 1.95;
-    beam.castShadow = true;
-    group.add(beam);
+    // Red/white chevron warning panel — bottom edge at y≈1.6.
+    const panelGeo = new THREE.BoxGeometry(1.15, 0.6, 0.22);
+    const panelMat = new THREE.MeshStandardMaterial({ map: this.chevronTexture, roughness: 0.4 });
+    const panel = new THREE.Mesh(panelGeo, panelMat);
+    panel.position.y = 1.9;
+    panel.castShadow = true;
+    group.add(panel);
+
+    // Round warning lights at each end of the panel.
+    const lightGeo = new THREE.SphereGeometry(0.13, 16, 16);
+    const lightMat = new THREE.MeshBasicMaterial({ color: '#ff3b30' });
+    const lightL = new THREE.Mesh(lightGeo, lightMat);
+    lightL.position.set(-0.62, 1.9, 0.13);
+    group.add(lightL);
+
+    const lightR = new THREE.Mesh(lightGeo, lightMat);
+    lightR.position.set(0.62, 1.9, 0.13);
+    group.add(lightR);
 
     return group;
   }
@@ -604,7 +588,7 @@ export class ThreeRenderer {
           o.type === 'low'
             ? this.createRedWhiteHurdleMesh()
             : o.type === 'high'
-              ? this.createOrangeFreightCarMesh()
+              ? this.createDuckWarningBarrierMesh()
               : this.createSubwayTrainMesh();
         this.scene.add(mesh);
         this.obstacleMeshes.set(o.id, mesh);
