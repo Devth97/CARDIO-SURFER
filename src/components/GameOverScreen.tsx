@@ -11,16 +11,20 @@ import {
   ArrowLeftRight,
   Flame,
   HeartPulse,
+  Medal,
 } from 'lucide-react';
 import type { GameStats } from '../game/types';
+import AdBanner from './AdBanner';
 
 interface Props {
   stats: GameStats;
   reason: string | null;
+  rank: number | null;
   onRestart: () => void;
+  onViewLeaderboard: () => void;
 }
 
-export default function GameOverScreen({ stats, reason, onRestart }: Props) {
+export default function GameOverScreen({ stats, reason, rank, onRestart, onViewLeaderboard }: Props) {
   const isNewHigh = Math.floor(stats.score) >= stats.highScore && stats.score > 0;
 
   useEffect(() => {
@@ -117,6 +121,17 @@ export default function GameOverScreen({ stats, reason, onRestart }: Props) {
           <div className="main-score-lbl">FINAL SCORE</div>
         </div>
 
+        <div className="weekly-rank-badge">
+          <Medal size={16} className="gold" />
+          {rank !== null ? (
+            <span>
+              Weekly Rank <strong>#{rank}</strong>
+            </span>
+          ) : (
+            <span>Weekly Rank —</span>
+          )}
+        </div>
+
         <div className="stats-grid">
           <div>
             <div className="stat-value icon-stat">
@@ -166,6 +181,12 @@ export default function GameOverScreen({ stats, reason, onRestart }: Props) {
       >
         <RotateCcw size={20} /> PLAY AGAIN
       </motion.button>
+
+      <button className="text-link" onClick={onViewLeaderboard}>
+        View Leaderboard →
+      </button>
+
+      <AdBanner />
     </motion.div>
   );
 }
