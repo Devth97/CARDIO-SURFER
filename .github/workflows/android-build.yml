@@ -47,6 +47,12 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # Defensive: gradlew's executable bit is easy to lose when the android/
+      # project is generated/committed from Windows (NTFS has no Unix execute
+      # bit), which caused a real "Permission denied" CI failure once already.
+      - name: Ensure gradlew is executable
+        run: chmod +x android/gradlew
+
       - name: Build signed AAB
         working-directory: android
         env:
