@@ -24,7 +24,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile keystorePropertiesFile.exists() ? file(keystoreProperties['storeFile']) : null
+            storeFile rootProject.file("cardio-surfer-upload.jks")
             storePassword keystorePropertiesFile.exists() ? keystoreProperties['storePassword'] : System.getenv("KEYSTORE_PASSWORD")
             keyAlias keystorePropertiesFile.exists() ? keystoreProperties['keyAlias'] : System.getenv("KEY_ALIAS")
             keyPassword keystorePropertiesFile.exists() ? keystoreProperties['keyPassword'] : System.getenv("KEY_PASSWORD")

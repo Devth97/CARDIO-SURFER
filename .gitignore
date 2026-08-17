@@ -15,7 +15,7 @@ npm-debug.log*
 !.dev.vars.example
 
 # Android signing — never commit
-android/*.jks
-android/*.keystore
+android/**/*.jks
+android/**/*.keystore
 android/keystore.properties
 android/app/google-services.json

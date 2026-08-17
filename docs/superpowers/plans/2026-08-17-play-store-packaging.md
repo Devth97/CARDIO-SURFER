@@ -237,11 +237,14 @@ Add to `.gitignore` (repo root):
 
 ```
 # Android signing — never commit
-android/*.jks
-android/*.keystore
+android/**/*.jks
+android/**/*.keystore
 android/keystore.properties
 android/app/google-services.json
 ```
+
+Note: `**` is required (not a bare `android/*.jks`) so the pattern matches at any
+depth under `android/`, not just files directly inside it.
 
 - [ ] **Step 4: Create the committed template**
 
@@ -251,7 +254,9 @@ android/app/google-services.json
 # Copy to android/keystore.properties for local builds (gitignored, never commit real values).
 # CI reads the equivalent values from GitHub Actions secrets instead — see
 # .github/workflows/android-build.yml.
-storeFile=cardio-surfer-upload.jks
+# Note: the keystore file itself is NOT configurable here — build.gradle always
+# resolves it at the fixed path android/cardio-surfer-upload.jks (same path CI
+# decodes its keystore secret to).
 storePassword=
 keyAlias=cardio-surfer-upload
 keyPassword=
@@ -274,7 +279,7 @@ Inside the `android { }` block, add a `signingConfigs` block and reference it fr
 ```groovy
     signingConfigs {
         release {
-            storeFile keystorePropertiesFile.exists() ? file(keystoreProperties['storeFile']) : null
+            storeFile rootProject.file("cardio-surfer-upload.jks")
             storePassword keystorePropertiesFile.exists() ? keystoreProperties['storePassword'] : System.getenv("KEYSTORE_PASSWORD")
             keyAlias keystorePropertiesFile.exists() ? keystoreProperties['keyAlias'] : System.getenv("KEY_ALIAS")
             keyPassword keystorePropertiesFile.exists() ? keystoreProperties['keyPassword'] : System.getenv("KEY_PASSWORD")
@@ -288,7 +293,11 @@ Inside the `android { }` block, add a `signingConfigs` block and reference it fr
     }
 ```
 
-This lets local builds (if ever needed) read from `keystore.properties`, while CI supplies the same four values as environment variables — see Task 8.
+`storeFile` is always resolved from the fixed path `android/cardio-surfer-upload.jks`
+regardless of credential source — both the local `keystore.properties` flow and CI
+(which decodes its keystore secret straight to that same path, see Task 8) put the
+file there, so there's nothing to branch on. Only the password/alias/key-password
+values differ between local (`keystore.properties`) and CI (environment variables).
 
 - [ ] **Step 6: Commit**
 
