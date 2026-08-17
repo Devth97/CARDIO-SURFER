@@ -8,5 +8,5 @@ database_name = "subway-fit-db"
 database_id = "f1bf8067-002b-4773-9161-034fe3e1ce3c"
 
 [vars]
-ALLOWED_ORIGIN = "http://localhost:5173"
+ALLOWED_ORIGIN = "https://subway-fit-frontend.subway-fit-worker.workers.dev"
 FIREBASE_PROJECT_ID = "cardio-surfer"
