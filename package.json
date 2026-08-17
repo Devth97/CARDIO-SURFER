@@ -26,6 +26,7 @@
     "three": "^0.185.1"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.0",
     "@cloudflare/vite-plugin": "^1.52.1",
     "@testing-library/jest-dom": "^6.6.3",
