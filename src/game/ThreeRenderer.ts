@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import type { GameEngine, PlayerRenderState } from './GameEngine';
 import type { Coin, Obstacle, PowerUpItem } from './types';
-import { reportDiagnosticOnce } from '../debug/errorOverlay';
 
 // Lane spacing sized to the chase-cam distance below — wide enough to read as
 // 3 distinct lanes at this distance, narrow enough that a side lane stays
@@ -269,12 +268,18 @@ export class ThreeRenderer {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.centerCanvas();
     container.appendChild(this.renderer.domElement);
+    // Without calling preventDefault() here, a lost WebGL context (a known
+    // mobile-Chrome occurrence under memory/GPU pressure) is unrecoverable —
+    // the canvas renders nothing but its own clear color for the rest of the
+    // page's life, while everything GPU-independent (game logic, pose
+    // tracking, HUD) keeps running normally. This is what let the browser
+    // attempt automatic context restoration instead.
     this.renderer.domElement.addEventListener('webglcontextlost', (e) => {
       e.preventDefault();
-      reportDiagnosticOnce('webgl-context-lost', 'WebGL context lost');
+      console.warn('WebGL context lost — attempting restoration');
     });
     this.renderer.domElement.addEventListener('webglcontextrestored', () => {
-      reportDiagnosticOnce('webgl-context-restored', 'WebGL context restored');
+      console.warn('WebGL context restored');
     });
 
     // 4. Lighting Setup
@@ -665,12 +670,6 @@ export class ThreeRenderer {
 
     // 1. Synchronize 3D Jake Player Position & Animations
     const targetX = LANE_X_POSITIONS[Math.round(playerState.displayLane)];
-    if (!Number.isFinite(targetX)) {
-      reportDiagnosticOnce(
-        'targetX-nonfinite',
-        `targetX non-finite: displayLane=${playerState.displayLane} lane=${playerState.lane} round=${Math.round(playerState.displayLane)}`,
-      );
-    }
     this.playerGroup.position.x = THREE.MathUtils.lerp(this.playerGroup.position.x, targetX, 0.3);
 
     // Follow the player's lane with the camera. Without this the camera stays
@@ -680,13 +679,6 @@ export class ThreeRenderer {
     this.camera.position.x = this.playerGroup.position.x;
     this.camera.lookAt(this.playerGroup.position.x, CAMERA_LOOKAT_Y, CAMERA_LOOKAT_Z);
     this.playerGroup.position.z = PLAYER_WORLD_Z; // Anchored at Z = -6.5 (4.5 units in front of camera at Z = -2.0)
-
-    if (!Number.isFinite(this.playerGroup.position.x) || !Number.isFinite(this.camera.position.x)) {
-      reportDiagnosticOnce(
-        'camera-position-nonfinite',
-        `Camera/player position went non-finite: player.x=${this.playerGroup.position.x} camera.x=${this.camera.position.x} displayLane=${playerState.displayLane} lane=${playerState.lane} state=${playerState.state}`,
-      );
-    }
 
     // Jump Arc & Duck Crouch
     if (playerState.state === 'jumping') {
@@ -798,10 +790,7 @@ export class ThreeRenderer {
     try {
       this.updateAndRender();
     } catch (err) {
-      reportDiagnosticOnce(
-        'render-loop-exception',
-        `updateAndRender threw: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}`,
-      );
+      console.error('updateAndRender threw:', err);
     }
     this.animFrameId = requestAnimationFrame(this.animate);
   };
