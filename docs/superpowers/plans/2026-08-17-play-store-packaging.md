@@ -171,6 +171,36 @@ git commit -m "android: generate app icon and splash screen from logo.png"
 
 ---
 
+### Task 3b: Fix icon/splash defects found in Task 3's review (do this before Task 12)
+
+Task 3's code review found two real, visually-confirmed defects in the generated assets, using the full `logo.png` key-art directly as both the adaptive-icon foreground and the splash source: (1) the adaptive launcher icon has a white halo around it (the generator defaulted the background layer to white since the source has no alpha channel to split), and the dense key-art (character, spray can, wordmark) is illegible at actual launcher-icon sizes; (2) the landscape splash screen center-crops the top of the 1254×1254 square source, cutting "CARDIO" off the "CARDIO SURFER" wordmark. Neither blocked Task 3 from being approved, but both should be fixed before store-listing screenshots/submission (Task 12 onward), not left as-is.
+
+This task isn't broken into TDD steps like the others since it's visual asset work, not testable code — do it as a normal implementation task with a visual self-check (open the generated PNGs) instead of an automated test.
+
+**Files:**
+- Modify: `assets/icon.png`, `assets/splash.png` (or replace with better-suited source art)
+- Regenerate: `android/app/src/main/res/mipmap-*`, `android/app/src/main/res/drawable*`
+
+- [ ] **Step 1: Fix the icon background halo** — the mechanical part of this fix (swap the plain white adaptive-icon background for one of the app's own brand colors, e.g. the dark background `#080711` used throughout `src/App.css`) can be done without new art: after regenerating, directly edit the generated `android/app/src/main/res/mipmap-*/ic_launcher_background.png` files (or, better, use `@capacitor/assets`' background-color option if the installed version supports one — check `npx capacitor-assets generate --help`) to use `#080711` instead of white.
+- [ ] **Step 2: Address wordmark legibility and the landscape splash crop** — this needs an actual design decision, not a mechanical fix: either a simplified icon mark (e.g. just the character/mascot, without the wordmark, designed to read at ~48dp) and a wordmark-centered or portrait-safe splash crop, or accepting the current art with the background-color fix from Step 1 as good enough for an initial internal-testing release. **Ask the user which they want** before spending more time on custom asset creation — this is a product/design call, not something to decide unilaterally.
+- [ ] **Step 3: Regenerate and verify**
+
+```bash
+npx capacitor-assets generate --android
+npx cap sync android
+```
+
+Open a few of the generated `mipmap-xxxhdpi/ic_launcher*.png` and `drawable-land-xxxhdpi/splash.png` files directly to visually confirm the halo and crop issues are actually resolved before committing — don't just trust that re-running the generator fixed it.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add assets/ android/app/src/main/res/
+git commit -m "android: fix icon background halo and landscape splash crop"
+```
+
+---
+
 ### Task 4: Generate the upload keystore and wire release signing
 
 **Files:**
