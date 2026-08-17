@@ -269,6 +269,13 @@ export class ThreeRenderer {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.centerCanvas();
     container.appendChild(this.renderer.domElement);
+    this.renderer.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      reportDiagnosticOnce('webgl-context-lost', 'WebGL context lost');
+    });
+    this.renderer.domElement.addEventListener('webglcontextrestored', () => {
+      reportDiagnosticOnce('webgl-context-restored', 'WebGL context restored');
+    });
 
     // 4. Lighting Setup
     const ambientLight = new THREE.AmbientLight('#ffffff', 0.95);
