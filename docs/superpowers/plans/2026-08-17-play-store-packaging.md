@@ -6,7 +6,7 @@
 
 **Architecture:** Capacitor wraps the existing live site in remote-URL mode (no bundled copy of `dist/`), so ordinary web/gameplay fixes ship instantly with no new native build. The one native-specific code change is Google Sign-In, which needs a native plugin instead of the existing `signInWithPopup` because Google blocks OAuth from embedded WebViews. A GitHub Actions workflow builds the signed `.aab`; the actual Play Store submission is a final manual gate after a real-device test passes.
 
-**Tech Stack:** Capacitor 7 (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`), `@capacitor-firebase/authentication` for native Google Sign-In, `keytool` (JDK 17, already installed) for keystore/fingerprint generation, GitHub Actions for the build pipeline.
+**Tech Stack:** Capacitor 8 (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android` — `latest` resolved to `^8.5.0` when Task 1 ran, not 7 as originally assumed here; Capacitor 8 requires Node >=22 in CI, see Task 8), `@capacitor-firebase/authentication@^7.5.0` (pinned below its own `@latest`/8.x due to a firebase-SDK peer-dependency conflict — see Task 7) for native Google Sign-In, `keytool` (JDK 17, already installed) for keystore/fingerprint generation, GitHub Actions for the build pipeline.
 
 ---
 
@@ -528,9 +528,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -578,6 +578,8 @@ git push origin frontend-auth-leaderboard
 This task needs direct user action (GitHub's web UI, Play Console, a real Android device) — walk the user through it directly. **This is the hard gate from the design spec: do not proceed to Task 10 or beyond until every step below passes.**
 
 **Files:** none (verification only, no commit).
+
+**Note on workflow visibility (discovered running this task live):** GitHub only lists a `workflow_dispatch` workflow in the Actions UI if the workflow file exists on the repo's **default branch** (`main` here), even though `.github/workflows/android-build.yml` was implemented and pushed to `frontend-auth-leaderboard` in Task 8. The fix used: copy just that one file to `main` in its own small commit (not merging the rest of the unvalidated packaging branch), so it appears as dispatchable — then, when actually running it, use the "Use workflow from" branch selector to pick `frontend-auth-leaderboard`, where the real Android project lives. Also discovered live: Capacitor's CLI (8.5.0, the version actually installed in Task 1, not the plan's originally-assumed 7) requires Node >=22 — `node-version: 20` in the workflow failed the "Sync Capacitor" step; fixed to `node-version: 22` (and `actions/setup-java` bumped v4→v5 for the same deprecation warning) in both copies of the workflow file.
 
 - [ ] **Step 1: Base64-encode the keystore**
 
