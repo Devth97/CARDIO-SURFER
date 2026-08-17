@@ -13,3 +13,9 @@ npm-debug.log*
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# Android signing — never commit
+android/*.jks
+android/*.keystore
+android/keystore.properties
+android/app/google-services.json
