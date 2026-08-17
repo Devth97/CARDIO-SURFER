@@ -9,6 +9,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate required secrets are set
+        run: |
+          for v in GOOGLE_SERVICES_JSON_BASE64 KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!v}" ]; then echo "::error::Secret $v is not set"; exit 1; fi
+          done
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -21,6 +33,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # WARNING: do not add debugging commands here (e.g. `cat google-services.json`,
+      # `keytool -list -v`) that would print the decoded file contents to the log.
+      # GitHub's secret masking only redacts literal reprints of the original secret
+      # value, not transformed/decoded output, so doing so would leak real key
+      # material into the Actions log.
       - name: Decode google-services.json
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
 
