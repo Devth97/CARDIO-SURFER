@@ -68,4 +68,44 @@ describe('API client', () => {
       headers: { Authorization: 'Bearer fake-id-token' },
     });
   });
+
+  // The worker returns valid JSON on error paths too (e.g. a 500 gives
+  // `{error: 'internal error'}`), so `response.json()` never throws on its
+  // own. Each function must check `response.ok` and reject instead of
+  // resolving with that error body cast to the success type.
+  describe('non-2xx responses', () => {
+    it('syncUser rejects on a non-2xx response', async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        new Response(JSON.stringify({ error: 'internal error' }), { status: 500 }),
+      );
+
+      await expect(syncUser(fakeUser)).rejects.toThrow('API request failed: 500');
+    });
+
+    it('submitRun rejects on a non-2xx response instead of resolving with the error body', async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        new Response(JSON.stringify({ error: 'internal error' }), { status: 500 }),
+      );
+
+      await expect(submitRun(fakeUser, { score: 500, calories: 30, durationSec: 60 })).rejects.toThrow(
+        'API request failed: 500',
+      );
+    });
+
+    it('getLeaderboard rejects on a non-2xx response instead of resolving with the error body', async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        new Response(JSON.stringify({ error: 'internal error' }), { status: 500 }),
+      );
+
+      await expect(getLeaderboard('weekly', 10)).rejects.toThrow('API request failed: 500');
+    });
+
+    it('getMyHistory rejects on a non-2xx response instead of resolving with the error body', async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        new Response(JSON.stringify({ error: 'internal error' }), { status: 404 }),
+      );
+
+      await expect(getMyHistory(fakeUser, 5)).rejects.toThrow('API request failed: 404');
+    });
+  });
 });

@@ -19,11 +19,24 @@ async function authHeader(user: User | null): Promise<Record<string, string>> {
   return { Authorization: `Bearer ${token}` };
 }
 
+// The worker returns valid JSON on every path, including errors (e.g. a 500
+// gives `{error: 'internal error'}`), so `response.json()` never throws on
+// its own. Without this check, an error body would get silently cast to the
+// success type. Throwing here gives callers one honest rejected promise for
+// any failure — HTTP-level or network-level — that a single `.catch()` can
+// handle uniformly.
+function assertOk(response: Response): void {
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
+}
+
 export async function syncUser(user: User): Promise<void> {
-  await fetch(`${apiUrl()}/users/sync`, {
+  const response = await fetch(`${apiUrl()}/users/sync`, {
     method: 'POST',
     headers: await authHeader(user),
   });
+  assertOk(response);
 }
 
 export async function submitRun(user: User, submission: RunSubmission): Promise<SubmitRunResult> {
@@ -32,6 +45,7 @@ export async function submitRun(user: User, submission: RunSubmission): Promise<
     headers: { 'Content-Type': 'application/json', ...(await authHeader(user)) },
     body: JSON.stringify(submission),
   });
+  assertOk(response);
   return response.json() as Promise<SubmitRunResult>;
 }
 
@@ -40,6 +54,7 @@ export async function getLeaderboard(
   limit = 50,
 ): Promise<LeaderboardResponse> {
   const response = await fetch(`${apiUrl()}/leaderboard?scope=${scope}&limit=${limit}`);
+  assertOk(response);
   return response.json() as Promise<LeaderboardResponse>;
 }
 
@@ -47,5 +62,6 @@ export async function getMyHistory(user: User, limit = 50): Promise<HistoryRespo
   const response = await fetch(`${apiUrl()}/me/history?limit=${limit}`, {
     headers: await authHeader(user),
   });
+  assertOk(response);
   return response.json() as Promise<HistoryResponse>;
 }
