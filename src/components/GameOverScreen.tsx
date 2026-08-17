@@ -10,7 +10,6 @@ import {
   ArrowDown,
   ArrowLeftRight,
   Flame,
-  Activity,
   HeartPulse,
 } from 'lucide-react';
 import type { GameStats } from '../game/types';

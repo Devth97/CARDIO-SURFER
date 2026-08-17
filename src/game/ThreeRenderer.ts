@@ -157,9 +157,6 @@ export class ThreeRenderer {
   private renderer: THREE.WebGLRenderer;
 
   private playerGroup: THREE.Group;
-  private playerTorso: THREE.Mesh;
-  private playerHead: THREE.Mesh;
-  private playerCap: THREE.Mesh;
   private playerLeftLeg: THREE.Mesh;
   private playerRightLeg: THREE.Mesh;
   private playerShieldAura: THREE.Mesh;
@@ -234,12 +231,8 @@ export class ThreeRenderer {
     this.buildTrackEnvironment();
 
     // 6. Build 3D Jake Player Model
-    const { playerGroup, playerTorso, playerHead, playerCap, playerLeftLeg, playerRightLeg, playerShieldAura } =
-      this.create3DJakePlayer();
+    const { playerGroup, playerLeftLeg, playerRightLeg, playerShieldAura } = this.create3DJakePlayer();
     this.playerGroup = playerGroup; // Attach the populated THREE.Group containing all player meshes!
-    this.playerTorso = playerTorso;
-    this.playerHead = playerHead;
-    this.playerCap = playerCap;
     this.playerLeftLeg = playerLeftLeg;
     this.playerRightLeg = playerRightLeg;
     this.playerShieldAura = playerShieldAura;

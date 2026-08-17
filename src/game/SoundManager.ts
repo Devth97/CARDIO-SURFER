@@ -4,8 +4,6 @@
 class SoundManager {
   private ctx: AudioContext | null = null;
   private muted: boolean = false;
-  private bgOsc: OscillatorNode | null = null;
-  private bgGain: GainNode | null = null;
   private bgInterval: number | null = null;
 
   constructor() {
