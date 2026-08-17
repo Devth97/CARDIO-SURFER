@@ -462,15 +462,31 @@ export class ThreeRenderer {
   private createOrangeFreightCarMesh(): THREE.Group {
     const group = new THREE.Group();
 
-    // Orange Container Body with Textured Panel Ribs & Logo — kept lower than
-    // the elevated chase-cam so two adjacent-lane obstacles leave a sightline
-    // over the top instead of walling off the whole view down the track.
-    const bodyGeo = new THREE.BoxGeometry(1.15, 2.6, 6.0);
-    const bodyMat = new THREE.MeshStandardMaterial({ map: this.freightTexture, roughness: 0.6 });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 1.3;
-    body.castShadow = true;
-    group.add(body);
+    // This is the 'high' obstacle type — cleared by ducking, not by jumping
+    // or switching lanes. Ducking scales the player group to 0.6x height
+    // around its y=0 base, so a ducking player's head sits at roughly
+    // 2.15 * 0.6 ≈ 1.3; standing head height is ~2.15-2.24. The support
+    // posts and beam below are sized to leave open space under y≈1.6 (clear
+    // for a ducking player) while blocking y≈1.6-2.3 (hits a standing
+    // player) — an actual gap to duck under, not a ground-to-roof solid box
+    // indistinguishable from the 'full' (must-switch-lanes) obstacle.
+    const postGeo = new THREE.BoxGeometry(0.2, 1.6, 0.2);
+    const postMat = new THREE.MeshStandardMaterial({ color: '#5d4037' });
+    const postL = new THREE.Mesh(postGeo, postMat);
+    postL.position.set(-0.62, 0.8, 0);
+    group.add(postL);
+
+    const postR = new THREE.Mesh(postGeo, postMat);
+    postR.position.set(0.62, 0.8, 0);
+    group.add(postR);
+
+    // Orange Overhead Beam with Textured Panel Ribs & Logo
+    const beamGeo = new THREE.BoxGeometry(1.15, 0.7, 1.4);
+    const beamMat = new THREE.MeshStandardMaterial({ map: this.freightTexture, roughness: 0.6 });
+    const beam = new THREE.Mesh(beamGeo, beamMat);
+    beam.position.y = 1.95;
+    beam.castShadow = true;
+    group.add(beam);
 
     return group;
   }

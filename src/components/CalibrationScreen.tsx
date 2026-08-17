@@ -18,7 +18,7 @@ interface Props {
   onDone: () => void;
 }
 
-const COUNTDOWN_START = 2; // 2 seconds hold for 180° T-Pose calibration
+const COUNTDOWN_START = 1; // 1 second hold for 180° T-Pose calibration
 
 export default function CalibrationScreen({ debug, onDone }: Props) {
   const [phase, setPhase] = useState<'practice' | 'tpose'>('practice');
