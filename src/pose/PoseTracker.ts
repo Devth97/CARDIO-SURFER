@@ -52,7 +52,6 @@ export class PoseTracker {
 
   private smoothedX = 0.5;
   private smoothedY = 0.5;
-  private prevFrameTime = 0;
   private bodyHeight = 0.25;
   private hasSample = false;
   private lastGoodPoseAt = 0;
@@ -144,7 +143,6 @@ export class PoseTracker {
     if (!this.landmarker) throw new Error('PoseTracker.init() must resolve before start()');
     this.video = video;
     this.running = true;
-    this.prevFrameTime = performance.now();
     this.loop();
   }
 
@@ -182,8 +180,6 @@ export class PoseTracker {
   };
 
   private processResult(landmarks: NormalizedLandmark[] | null, now: number) {
-    this.prevFrameTime = now;
-
     if (!landmarks) {
       this.tPoseDetected = false;
       this.rightHandRaised = false;

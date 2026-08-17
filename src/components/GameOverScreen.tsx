@@ -10,7 +10,6 @@ import {
   ArrowDown,
   ArrowLeftRight,
   Flame,
-  Activity,
   HeartPulse,
 } from 'lucide-react';
 import type { GameStats } from '../game/types';
@@ -72,7 +71,7 @@ export default function GameOverScreen({ stats, reason, onRestart }: Props) {
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
       >
-        <img src="/logo.jpg" alt="Cardio Surfer Logo" className="game-over-logo" />
+        <img src="/logo.png" alt="Cardio Surfer Logo" className="game-over-logo" />
       </motion.div>
 
       <h1 className="title game-over-title">GAME OVER</h1>

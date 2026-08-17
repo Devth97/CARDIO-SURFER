@@ -86,7 +86,7 @@ export function drawScene(
 }
 
 // --- 1. SKY & MEDITERRANEAN BUILDINGS (Matching Image 2 Reference) ---
-function drawSkyAndEnvironment(ctx: CanvasRenderingContext2D, vp: Viewport, offset: number) {
+function drawSkyAndEnvironment(ctx: CanvasRenderingContext2D, vp: Viewport, _offset: number) {
   // Vibrant Blue Sky
   const skyGrad = ctx.createLinearGradient(0, 0, 0, vp.horizonY);
   skyGrad.addColorStop(0, '#29b6f6');
@@ -388,7 +388,7 @@ function drawJakePlayer(
   ctx: CanvasRenderingContext2D,
   vp: Viewport,
   player: PlayerRenderState,
-  offset: number,
+  _offset: number,
 ) {
   const scale = scaleAt(1);
   const x = projectX(vp, player.displayLane, 1);

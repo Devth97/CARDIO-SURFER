@@ -57,7 +57,7 @@ export default function StartScreen({ onStart, error, loading }: Props) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
       >
-        <img src="/logo.jpg" alt="Cardio Surfer Logo" className="app-logo-img" />
+        <img src="/logo.png" alt="Cardio Surfer Logo" className="app-logo-img" />
       </motion.div>
 
       <motion.h1

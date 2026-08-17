@@ -9,7 +9,6 @@ import {
   Magnet,
   Star,
   Coins,
-  ArrowUp,
   ArrowDown,
   AlertTriangle,
   Activity,
