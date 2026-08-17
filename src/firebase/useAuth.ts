@@ -50,7 +50,9 @@ export function useAuth(): AuthState {
 
   const signOut = async (): Promise<void> => {
     if (Capacitor.isNativePlatform()) {
-      await FirebaseAuthentication.signOut();
+      await FirebaseAuthentication.signOut().catch((err) => {
+        console.error('Native sign-out failed, still clearing local session:', err);
+      });
     }
     await firebaseSignOut(auth);
   };
