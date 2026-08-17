@@ -73,6 +73,15 @@ export default function App() {
     }
   }, [poseTracker]);
 
+  const resetRunGuard = useCallback(() => {
+    submittedRef.current = false;
+    setRank(null);
+  }, []);
+
+  // Only ever called while transitioning playing -> gameover, so `user`
+  // cannot legitimately change mid-flight — see the effect below, whose
+  // dependency on this callback means a sign-in/sign-out would otherwise
+  // resubscribe engine listeners with a stale `user` closure.
   const submitRunAndFetchRank = useCallback(
     async (stats: GameStats) => {
       if (!user) return;
@@ -165,22 +174,20 @@ export default function App() {
 
   const handleCalibrationDone = useCallback(() => {
     poseTracker.calibrateNow();
-    submittedRef.current = false;
-    setRank(null);
+    resetRunGuard();
     engine.start();
     setScreen('playing');
-  }, [engine, poseTracker]);
+  }, [engine, poseTracker, resetRunGuard]);
 
   const handleRestart = useCallback(() => {
-    submittedRef.current = false;
-    setRank(null);
+    resetRunGuard();
     if (poseTracker.isCalibrated()) {
       engine.start();
       setScreen('playing');
     } else {
       setScreen('calibrating');
     }
-  }, [engine, poseTracker]);
+  }, [engine, poseTracker, resetRunGuard]);
 
   const handleTogglePause = useCallback(() => {
     engine.togglePause();
