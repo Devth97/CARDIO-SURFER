@@ -4,6 +4,7 @@ dist/
 *.local
 .env
 .env.*
+!.env.example
 npm-debug.log*
 .worktrees/
 .superpowers/
