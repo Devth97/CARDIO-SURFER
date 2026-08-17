@@ -1106,3 +1106,214 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ---------- Player badge (StartScreen, signed-in state) ---------- */
+
+.player-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 6px 10px 6px 6px;
+}
+
+.player-badge-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.player-badge-avatar.placeholder {
+  background: rgba(0, 240, 255, 0.25);
+}
+
+.player-badge-name {
+  font-size: 12px;
+  color: #e2e8f0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-badge-signout {
+  background: none;
+  border: none;
+  color: #b8c0d6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.player-badge-signout:hover {
+  color: #ff5252;
+}
+
+/* ---------- Sign-in screen ---------- */
+
+.sign-in-screen {
+  background: radial-gradient(circle at center, #1b1536 0%, #080711 100%);
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #00f0ff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Weekly rank badge (GameOverScreen) ---------- */
+
+.weekly-rank-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 4px 0;
+}
+
+/* ---------- Leaderboard screen ---------- */
+
+.leaderboard-screen {
+  background: radial-gradient(circle at center, #1b1536 0%, #080711 100%);
+  justify-content: flex-start;
+  padding-top: 24px;
+}
+
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.leaderboard-header .title {
+  font-size: 24px;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  width: 100%;
+  max-width: 440px;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tab {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #b8c0d6;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: rgba(0, 240, 255, 0.4);
+  color: #00f0ff;
+}
+
+.leaderboard-list {
+  width: 100%;
+  max-width: 440px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.leaderboard-row.you {
+  background: rgba(0, 240, 255, 0.08);
+  border-radius: 8px;
+}
+
+.leaderboard-rank {
+  width: 26px;
+  text-align: center;
+  color: #7e8b9b;
+  font-weight: 700;
+}
+
+.leaderboard-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.leaderboard-avatar.placeholder {
+  background: rgba(0, 240, 255, 0.25);
+}
+
+.leaderboard-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.leaderboard-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* ---------- Ad banner slot ---------- */
+
+.ad-banner {
+  width: 100%;
+  max-width: 440px;
+  min-height: 50px;
+  flex-shrink: 0;
+}
+
+.ad-banner-placeholder {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}

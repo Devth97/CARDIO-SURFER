@@ -4,36 +4,104 @@ import { Play } from 'lucide-react';
 import './App.css';
 import { GameEngine } from './game/GameEngine';
 import { PoseTracker, type PoseDebugState } from './pose/PoseTracker';
+import { useAuth } from './firebase/useAuth';
+import { getLeaderboard, submitRun, syncUser } from './api/client';
 import StartScreen from './components/StartScreen';
+import SignInScreen from './components/SignInScreen';
 import CalibrationScreen from './components/CalibrationScreen';
 import GameCanvas from './components/GameCanvas';
 import CameraPreview from './components/CameraPreview';
 import HUD from './components/HUD';
 import GameOverScreen from './components/GameOverScreen';
-import type { GameSnapshot } from './game/types';
+import LeaderboardScreen from './components/LeaderboardScreen';
+import type { GameSnapshot, GameStats } from './game/types';
 
-type Screen = 'start' | 'calibrating' | 'playing' | 'gameover';
+type Screen = 'start' | 'signing-in' | 'calibrating' | 'playing' | 'gameover' | 'leaderboard';
 
 export default function App() {
   const engine = useMemo(() => new GameEngine(), []);
   const poseTracker = useMemo(() => new PoseTracker(), []);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const submittedRef = useRef(false);
+
+  const { user, signIn, signOut } = useAuth();
 
   const [screen, setScreen] = useState<Screen>('start');
+  const [leaderboardOrigin, setLeaderboardOrigin] = useState<'start' | 'gameover'>('start');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [signingIn, setSigningIn] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
   const [debug, setDebug] = useState<PoseDebugState | null>(null);
   const [snapshot, setSnapshot] = useState<GameSnapshot>({
     status: 'idle',
     stats: engine.getStats(),
   });
 
+  const setupCamera = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await poseTracker.init();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      poseTracker.start(videoRef.current!);
+      setScreen('calibrating');
+    } catch (e) {
+      console.error(e);
+      setError(
+        e instanceof Error && e.name === 'NotAllowedError'
+          ? 'Camera permission was denied. Please allow camera access and try again.'
+          : 'Could not start camera or pose landmarker. You can still test with keyboard fallback!',
+      );
+      // Camera failures always surface via StartScreen's existing error UI,
+      // whether setupCamera was triggered directly from Start (already
+      // there — this is a no-op) or from just after a successful sign-in
+      // (SignInScreen has no camera-error UI of its own).
+      setScreen('start');
+    } finally {
+      setLoading(false);
+    }
+  }, [poseTracker]);
+
+  const submitRunAndFetchRank = useCallback(
+    async (stats: GameStats) => {
+      if (!user) return;
+      const result = await submitRun(user, {
+        score: Math.floor(stats.score),
+        calories: stats.caloriesBurnt,
+        durationSec: Math.ceil(stats.elapsedMs / 1000),
+      }).catch(() => null);
+      if (!result || !result.ok) return;
+
+      const leaderboard = await getLeaderboard('weekly').catch(() => null);
+      if (!leaderboard) return;
+      const myIndex = leaderboard.entries.findIndex((entry) => entry.uid === user.uid);
+      if (myIndex !== -1) setRank(myIndex + 1);
+    },
+    [user],
+  );
+
   // Subscribe to engine + pose tracker once.
   useEffect(() => {
     const unsubEngine = engine.subscribe((snap) => {
       setSnapshot(snap);
-      if (snap.status === 'gameover') setScreen('gameover');
+      if (snap.status === 'gameover') {
+        setScreen('gameover');
+        if (!submittedRef.current) {
+          submittedRef.current = true;
+          void submitRunAndFetchRank(snap.stats);
+        }
+      }
     });
     const unsubDebug = poseTracker.onDebug(setDebug);
     const unsubAction = poseTracker.onAction((action) => engine.handleAction(action));
@@ -42,7 +110,7 @@ export default function App() {
       unsubDebug();
       unsubAction();
     };
-  }, [engine, poseTracker]);
+  }, [engine, poseTracker, submitRunAndFetchRank]);
 
   // Keyboard fallback so the game can be tested/played without a camera.
   useEffect(() => {
@@ -71,41 +139,41 @@ export default function App() {
     };
   }, [engine, screen, snapshot.status]);
 
-  const setupCamera = useCallback(async () => {
-    setError(null);
-    setLoading(true);
+  const handlePlayTap = useCallback(() => {
+    if (!user) {
+      setSignInError(null);
+      setScreen('signing-in');
+      return;
+    }
+    void setupCamera();
+  }, [user, setupCamera]);
+
+  const handleSignIn = useCallback(async () => {
+    setSignInError(null);
+    setSigningIn(true);
     try {
-      await poseTracker.init();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      poseTracker.start(videoRef.current!);
-      setScreen('calibrating');
+      const signedInUser = await signIn();
+      syncUser(signedInUser).catch(() => {});
+      await setupCamera();
     } catch (e) {
       console.error(e);
-      setError(
-        e instanceof Error && e.name === 'NotAllowedError'
-          ? 'Camera permission was denied. Please allow camera access and try again.'
-          : 'Could not start camera or pose landmarker. You can still test with keyboard fallback!',
-      );
+      setSignInError('Could not sign in. Please try again.');
     } finally {
-      setLoading(false);
+      setSigningIn(false);
     }
-  }, [poseTracker]);
+  }, [signIn, setupCamera]);
 
   const handleCalibrationDone = useCallback(() => {
     poseTracker.calibrateNow();
+    submittedRef.current = false;
+    setRank(null);
     engine.start();
     setScreen('playing');
   }, [engine, poseTracker]);
 
   const handleRestart = useCallback(() => {
+    submittedRef.current = false;
+    setRank(null);
     if (poseTracker.isCalibrated()) {
       engine.start();
       setScreen('playing');
@@ -117,6 +185,15 @@ export default function App() {
   const handleTogglePause = useCallback(() => {
     engine.togglePause();
   }, [engine]);
+
+  const openLeaderboard = useCallback(() => {
+    setLeaderboardOrigin(screen === 'gameover' ? 'gameover' : 'start');
+    setScreen('leaderboard');
+  }, [screen]);
+
+  const closeLeaderboard = useCallback(() => {
+    setScreen(leaderboardOrigin);
+  }, [leaderboardOrigin]);
 
   useEffect(() => {
     return () => {
@@ -140,7 +217,29 @@ export default function App() {
 
         <AnimatePresence mode="wait">
           {screen === 'start' && (
-            <StartScreen key="start" onStart={setupCamera} error={error} loading={loading} />
+            <StartScreen
+              key="start"
+              onStart={handlePlayTap}
+              onViewLeaderboard={openLeaderboard}
+              onSignOut={() => void signOut()}
+              user={user}
+              error={error}
+              loading={loading}
+            />
+          )}
+
+          {screen === 'signing-in' && (
+            <SignInScreen
+              key="signing-in"
+              onSignIn={() => void handleSignIn()}
+              onBack={() => setScreen('start')}
+              error={signInError}
+              loading={signingIn || loading}
+            />
+          )}
+
+          {screen === 'leaderboard' && (
+            <LeaderboardScreen key="leaderboard" currentUser={user} onBack={closeLeaderboard} />
           )}
 
           {screen === 'calibrating' && (
@@ -176,7 +275,9 @@ export default function App() {
                 <GameOverScreen
                   stats={snapshot.stats}
                   reason={engine.getGameOverReason()}
+                  rank={rank}
                   onRestart={handleRestart}
+                  onViewLeaderboard={openLeaderboard}
                 />
               )}
             </div>
