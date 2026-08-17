@@ -109,8 +109,10 @@ Add these lines immediately after the `<manifest ...>` opening tag, before `<app
 ```xml
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="true" />
 ```
+
+Note the `.front` suffix: `getUserMedia({ facingMode: 'user' })` in `src/App.tsx` requests the front-facing camera for pose tracking, and plain `android.hardware.camera` in Android's manifest schema specifically means the *back* camera — declaring the wrong one would either wrongly filter out front-camera-only devices from the Play Store listing, or wrongly admit back-camera-only devices that can't actually run the game. (Corrected here after code review caught this during Task 2's execution.)
 
 - [ ] **Step 3: Verify**
 
