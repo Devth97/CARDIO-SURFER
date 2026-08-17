@@ -12,6 +12,8 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@mediapipe/tasks-vision": "^1.0.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/three": "^0.185.4",
@@ -24,6 +26,7 @@
     "three": "^0.185.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
     "@cloudflare/vite-plugin": "^1.52.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
