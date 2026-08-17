@@ -12,6 +12,7 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor/android": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@mediapipe/tasks-vision": "^1.0.1",

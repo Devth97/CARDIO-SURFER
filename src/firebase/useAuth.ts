@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithCredential,
   signInWithPopup,
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { auth } from './config';
 
 export interface AuthState {
@@ -13,6 +16,20 @@ export interface AuthState {
   loading: boolean;
   signIn: () => Promise<User>;
   signOut: () => Promise<void>;
+}
+
+async function signInNative(): Promise<User> {
+  const result = await FirebaseAuthentication.signInWithGoogle();
+  const idToken = result.credential?.idToken;
+  if (!idToken) throw new Error('Native Google Sign-In did not return an ID token');
+  const credential = GoogleAuthProvider.credential(idToken);
+  const userCredential = await signInWithCredential(auth, credential);
+  return userCredential.user;
+}
+
+async function signInWeb(): Promise<User> {
+  const result = await signInWithPopup(auth, new GoogleAuthProvider());
+  return result.user;
 }
 
 export function useAuth(): AuthState {
@@ -28,11 +45,13 @@ export function useAuth(): AuthState {
   }, []);
 
   const signIn = async (): Promise<User> => {
-    const result = await signInWithPopup(auth, new GoogleAuthProvider());
-    return result.user;
+    return Capacitor.isNativePlatform() ? signInNative() : signInWeb();
   };
 
   const signOut = async (): Promise<void> => {
+    if (Capacitor.isNativePlatform()) {
+      await FirebaseAuthentication.signOut();
+    }
     await firebaseSignOut(auth);
   };
 
