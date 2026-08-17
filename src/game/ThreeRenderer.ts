@@ -120,6 +120,101 @@ function createChevronTexture(): THREE.CanvasTexture {
   return texture;
 }
 
+// Power-up icon textures — drawn once and reused on a camera-facing sprite
+// per power-up (see createPowerUpMesh), so magnet/shield/star are readable
+// as distinct symbols rather than three same-shaped glowing spheres that
+// only differ by color.
+function createMagnetIconTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+  const cx = 64;
+  const cy = 64;
+
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 16;
+
+  // Silver horseshoe body.
+  ctx.strokeStyle = '#e8eaf0';
+  ctx.beginPath();
+  ctx.moveTo(cx - 26, cy - 34);
+  ctx.lineTo(cx - 26, cy + 4);
+  ctx.arc(cx, cy + 4, 26, Math.PI, 0, false);
+  ctx.lineTo(cx + 26, cy - 34);
+  ctx.stroke();
+
+  // Red pole tips.
+  ctx.strokeStyle = '#ff3b30';
+  ctx.beginPath();
+  ctx.moveTo(cx - 26, cy - 34);
+  ctx.lineTo(cx - 26, cy - 16);
+  ctx.moveTo(cx + 26, cy - 34);
+  ctx.lineTo(cx + 26, cy - 16);
+  ctx.stroke();
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+function createShieldIconTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+  const cx = 64;
+  const cy = 64;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 40);
+  ctx.bezierCurveTo(cx + 24, cy - 34, cx + 36, cy - 30, cx + 36, cy - 18);
+  ctx.bezierCurveTo(cx + 36, cy + 8, cx + 24, cy + 30, cx, cy + 42);
+  ctx.bezierCurveTo(cx - 24, cy + 30, cx - 36, cy + 8, cx - 36, cy - 18);
+  ctx.bezierCurveTo(cx - 36, cy - 30, cx - 24, cy - 34, cx, cy - 40);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#00838f';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+function createStarIconTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+  const cx = 64;
+  const cy = 64;
+  const spikes = 5;
+  const outerR = 38;
+  const innerR = 16;
+  let rot = (Math.PI / 2) * 3;
+  const step = Math.PI / spikes;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerR);
+  for (let i = 0; i < spikes; i++) {
+    let x = cx + Math.cos(rot) * outerR;
+    let y = cy + Math.sin(rot) * outerR;
+    ctx.lineTo(x, y);
+    rot += step;
+    x = cx + Math.cos(rot) * innerR;
+    y = cy + Math.sin(rot) * innerR;
+    ctx.lineTo(x, y);
+    rot += step;
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#e65100';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  return new THREE.CanvasTexture(canvas);
+}
+
 export class ThreeRenderer {
   private container: HTMLElement;
   private scene: THREE.Scene;
@@ -140,6 +235,9 @@ export class ThreeRenderer {
   // Cached Textures
   private trainTexture = createTrainTexture();
   private chevronTexture = createChevronTexture();
+  private magnetIconTexture = createMagnetIconTexture();
+  private shieldIconTexture = createShieldIconTexture();
+  private starIconTexture = createStarIconTexture();
 
   private clock = new THREE.Clock();
   private animFrameId: number | null = null;
@@ -524,6 +622,25 @@ export class ThreeRenderer {
     });
     const sphere = new THREE.Mesh(geo, mat);
     group.add(sphere);
+
+    // Camera-facing icon so the three power-ups read as distinct symbols
+    // (magnet/shield/star) at a glance, not just three same-shaped glowing
+    // spheres that only differ by color. A Sprite always faces the camera
+    // regardless of the group's rotation. Positioned just in front of the
+    // sphere's surface (radius 0.7) so the sphere's own near-facing
+    // geometry doesn't occlude it.
+    const iconTexture =
+      type === 'shield'
+        ? this.shieldIconTexture
+        : type === 'magnet'
+          ? this.magnetIconTexture
+          : this.starIconTexture;
+    const iconMat = new THREE.SpriteMaterial({ map: iconTexture, transparent: true, depthWrite: false });
+    const icon = new THREE.Sprite(iconMat);
+    icon.scale.set(0.85, 0.85, 1);
+    icon.position.z = 0.72;
+    group.add(icon);
+
     return group;
   }
 
