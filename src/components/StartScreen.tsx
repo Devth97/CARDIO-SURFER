@@ -10,17 +10,34 @@ import {
   Activity,
   HelpCircle,
   Hand,
+  LogOut,
 } from 'lucide-react';
 import { soundManager } from '../game/SoundManager';
 import TutorialGuideModal from './TutorialGuideModal';
+import AdBanner from './AdBanner';
+
+interface StartScreenUser {
+  displayName: string | null;
+  photoURL: string | null;
+}
 
 interface Props {
   onStart: () => void;
+  onViewLeaderboard: () => void;
+  onSignOut: () => void;
+  user: StartScreenUser | null;
   error: string | null;
   loading: boolean;
 }
 
-export default function StartScreen({ onStart, error, loading }: Props) {
+export default function StartScreen({
+  onStart,
+  onViewLeaderboard,
+  onSignOut,
+  user,
+  error,
+  loading,
+}: Props) {
   const [muted, setMuted] = useState(soundManager.isMuted());
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -51,6 +68,20 @@ export default function StartScreen({ onStart, error, loading }: Props) {
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ duration: 0.4 }}
     >
+      {user && (
+        <div className="player-badge">
+          {user.photoURL ? (
+            <img src={user.photoURL} alt="" className="player-badge-avatar" />
+          ) : (
+            <span className="player-badge-avatar placeholder" />
+          )}
+          <span className="player-badge-name">{user.displayName ?? 'Player'}</span>
+          <button className="player-badge-signout" onClick={onSignOut} title="Sign out">
+            <LogOut size={14} />
+          </button>
+        </div>
+      )}
+
       <motion.div
         className="logo-container"
         initial={{ y: -20, opacity: 0 }}
@@ -145,6 +176,10 @@ export default function StartScreen({ onStart, error, loading }: Props) {
           )}
         </button>
 
+        <button className="icon-btn" onClick={onViewLeaderboard} title="Leaderboard">
+          <Trophy size={20} />
+        </button>
+
         <button
           className="icon-btn"
           onClick={() => setShowTutorial(true)}
@@ -165,6 +200,8 @@ export default function StartScreen({ onStart, error, loading }: Props) {
       <p className="hint">
         💡 Keyboard arrows (↑ ↓ ← →) & Space bar also work as manual fallback!
       </p>
+
+      <AdBanner />
 
       {/* First-time Tutorial Modal */}
       <AnimatePresence>
