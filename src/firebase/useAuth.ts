@@ -19,16 +19,14 @@ export interface AuthState {
 }
 
 async function signInNative(): Promise<User> {
-  // Reverted to the default Credential Manager path (useCredentialManager:
-  // true). The earlier NoCredentialException that motivated falling back to
-  // the deprecated legacy GoogleSignInClient flow is commonly caused by
-  // stale/corrupted Google Play Services data — which has since been
-  // cleared on test devices while chasing an unrelated DEVELOPER_ERROR(10)
-  // from the legacy path. Google Play services docs confirm the legacy API
-  // is deprecated and being removed, and may not reliably support newly
-  // created (2026) OAuth clients — worth testing Credential Manager again
-  // now that the original blocker may no longer reproduce.
-  const result = await FirebaseAuthentication.signInWithGoogle();
+  // Credential Manager path (default) was retested and still throws
+  // NoCredentialException immediately, before even showing an account
+  // picker — confirmed NOT a Play Services cache issue (cache/storage was
+  // cleared on two devices with no change). Reverting to the legacy
+  // GoogleSignInClient flow, which at least progresses to account
+  // selection before failing differently (DEVELOPER_ERROR 10), giving a
+  // more specific error to keep investigating against.
+  const result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: false });
   const idToken = result.credential?.idToken;
   if (!idToken) throw new Error('Native Google Sign-In did not return an ID token');
   const credential = GoogleAuthProvider.credential(idToken);
