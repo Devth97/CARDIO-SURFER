@@ -166,10 +166,7 @@ export default function App() {
       await setupCamera();
     } catch (e) {
       console.error(e);
-      // TEMPORARY: re-enabled again to diagnose a recurring sign-in
-      // failure after the NPE fix. Revert once confirmed working.
-      const detail = e instanceof Error ? e.message : String(e);
-      setSignInError(`Could not sign in: ${detail}`);
+      setSignInError('Could not sign in. Please try again.');
     } finally {
       setSigningIn(false);
     }
