@@ -53,6 +53,15 @@ jobs:
       - name: Ensure gradlew is executable
         run: chmod +x android/gradlew
 
+      # Diagnostic: confirm which play-services-auth (and related Google
+      # Sign-In library) version is actually being compiled in, since
+      # rgcfaIncludeGoogle previously defaulted to false and the library
+      # was only ever pulled in transitively via firebase-auth at an
+      # unpinned version. Safe to log — no secret material involved.
+      - name: Print resolved Google Sign-In dependency versions
+        working-directory: android
+        run: ./gradlew :app:dependencies --configuration releaseRuntimeClasspath | grep -E "play-services-auth|androidx.credentials|libraries.identity.googleid|firebase-auth" || true
+
       - name: Build signed AAB
         working-directory: android
         env:
