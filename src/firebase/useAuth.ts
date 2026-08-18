@@ -19,7 +19,14 @@ export interface AuthState {
 }
 
 async function signInNative(): Promise<User> {
-  const result = await FirebaseAuthentication.signInWithGoogle();
+  // useCredentialManager defaults to true, which uses Android's newer
+  // Credential Manager API — that API threw NoCredentialException
+  // ("No credentials available") on a real test device that definitely
+  // has multiple Google accounts configured, a known compatibility gap
+  // with the newer API on some devices. Falling back to the older
+  // GoogleSignInClient intent-based flow (still fully native — a system
+  // activity from Play Services, not a WebView) resolved it.
+  const result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: false });
   const idToken = result.credential?.idToken;
   if (!idToken) throw new Error('Native Google Sign-In did not return an ID token');
   const credential = GoogleAuthProvider.credential(idToken);
