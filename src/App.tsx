@@ -166,11 +166,7 @@ export default function App() {
       await setupCamera();
     } catch (e) {
       console.error(e);
-      // TEMPORARY: showing the raw error to diagnose a native sign-in
-      // failure with no device debugging access. Revert to a generic
-      // message once root-caused.
-      const detail = e instanceof Error ? e.message : String(e);
-      setSignInError(`Could not sign in: ${detail}`);
+      setSignInError('Could not sign in. Please try again.');
     } finally {
       setSigningIn(false);
     }
