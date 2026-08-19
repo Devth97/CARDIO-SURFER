@@ -4,6 +4,7 @@ import {
   DUCK_RELEASE_RATIO,
   HAND_RAISE_RELEASE_OFFSET,
   HAND_RAISE_TRIGGER_OFFSET,
+  JUMP_ARMED_TIMEOUT_MS,
   JUMP_COOLDOWN_MS,
   JUMP_DISPLACEMENT_RATIO,
   JUMP_RELEASE_RATIO,
@@ -64,6 +65,7 @@ export class PoseTracker {
 
   private duckActive = false;
   private jumpArmed = false;
+  private jumpArmedAt = 0;
   private lastJumpAt = -Infinity;
 
   private rightHandArmed = false;
@@ -286,9 +288,13 @@ export class PoseTracker {
     // pattern as duckActive/rightHandArmed/leftHandArmed.
     if (!this.jumpArmed && upwardRise > JUMP_DISPLACEMENT_RATIO && nowMs - this.lastJumpAt > JUMP_COOLDOWN_MS) {
       this.jumpArmed = true;
+      this.jumpArmedAt = nowMs;
       this.lastJumpAt = nowMs;
       this.emitAction('JUMP');
-    } else if (this.jumpArmed && upwardRise < JUMP_RELEASE_RATIO) {
+    } else if (
+      this.jumpArmed &&
+      (upwardRise < JUMP_RELEASE_RATIO || nowMs - this.jumpArmedAt > JUMP_ARMED_TIMEOUT_MS)
+    ) {
       this.jumpArmed = false;
     }
 

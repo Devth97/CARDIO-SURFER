@@ -5,8 +5,14 @@ export const MIN_LANDMARK_CONFIDENCE = 0.28;
 
 // Instant High-Sensitivity Jump: Upward shoulder/head displacement of 7% above standing baseline.
 export const JUMP_DISPLACEMENT_RATIO = 0.07; // 7% upward rise above baseline standing position
-export const JUMP_RELEASE_RATIO = 0.03; // Must fall back below 3% rise before another jump can arm
+export const JUMP_RELEASE_RATIO = 0.035; // Must fall back below 3.5% rise before another jump can arm
 export const JUMP_COOLDOWN_MS = 220; // Fast 220ms consecutive jump cooldown
+// Failsafe: if the player's post-landing resting position never quite settles
+// back within JUMP_RELEASE_RATIO of their exact calibrated baseline (common —
+// stance drift, breathing, minor camera-relative movement), jumpArmed could
+// otherwise stay latched true forever, silently blocking every jump after the
+// first. Force a re-arm after this long regardless of position.
+export const JUMP_ARMED_TIMEOUT_MS = 900;
 
 // Duck: Requires a clear 16% downward squat drop below standing baseline.
 export const DUCK_DROP_RATIO = 0.16; // 16% downward squat drop below baseline standing position
