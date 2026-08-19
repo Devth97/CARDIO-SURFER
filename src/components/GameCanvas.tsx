@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { GameEngine } from '../game/GameEngine';
 import { ThreeRenderer } from '../game/ThreeRenderer';
 
@@ -10,13 +11,19 @@ export default function GameCanvas({ engine }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<ThreeRenderer | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  // Surfaces a blank/frozen 3D canvas (WebGL context lost with no recovery,
+  // or the per-frame update crashing repeatedly) — previously invisible to
+  // a non-technical player, who'd just see an unexplained blank blue screen
+  // with no way to tell it apart from a working-but-empty scene.
+  const [renderIssue, setRenderIssue] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    setRenderIssue(null);
 
     // Instantiate Three.js WebGL 3D Renderer
-    const renderer = new ThreeRenderer(container, engine);
+    const renderer = new ThreeRenderer(container, engine, setRenderIssue);
     rendererRef.current = renderer;
 
     let rafId = 0;
@@ -62,12 +69,21 @@ export default function GameCanvas({ engine }: Props) {
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="game-canvas-container"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
-    />
+    <>
+      <div
+        ref={containerRef}
+        className="game-canvas-container"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+      />
+      {renderIssue && (
+        <div className="render-issue-banner">
+          <AlertTriangle size={16} />
+          <span>{renderIssue}</span>
+          <button onClick={() => window.location.reload()}>Reload</button>
+        </div>
+      )}
+    </>
   );
 }

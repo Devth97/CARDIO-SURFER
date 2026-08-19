@@ -244,9 +244,19 @@ export class ThreeRenderer {
   private engine: GameEngine;
   private resizeObserver: ResizeObserver;
 
-  constructor(container: HTMLElement, engine: GameEngine) {
+  // Reports a user-visible, non-DevTools-only signal when the 3D view stops
+  // rendering (blank clear-color canvas) — either a WebGL context loss that
+  // doesn't auto-restore, or the per-frame update throwing repeatedly. Pass
+  // null to clear a previously-reported issue.
+  private onRenderIssue: ((message: string | null) => void) | null;
+  private contextLostTimeoutId: number | null = null;
+  private consecutiveRenderErrors = 0;
+  private lastReportedRenderError: string | null = null;
+
+  constructor(container: HTMLElement, engine: GameEngine, onRenderIssue?: (message: string | null) => void) {
     this.container = container;
     this.engine = engine;
+    this.onRenderIssue = onRenderIssue ?? null;
 
     // 1. Scene & Atmosphere Setup
     this.scene = new THREE.Scene();
@@ -278,9 +288,21 @@ export class ThreeRenderer {
     this.renderer.domElement.addEventListener('webglcontextlost', (e) => {
       e.preventDefault();
       console.warn('WebGL context lost — attempting restoration');
+      // Restoration is usually near-instant when it happens at all — if it
+      // hasn't within a few seconds, it isn't going to, and the blank canvas
+      // needs a real page reload rather than sitting frozen indefinitely
+      // with no signal a non-technical player would ever notice.
+      this.contextLostTimeoutId = window.setTimeout(() => {
+        this.onRenderIssue?.('The 3D view lost its graphics connection and couldn\'t reconnect.');
+      }, 4000);
     });
     this.renderer.domElement.addEventListener('webglcontextrestored', () => {
       console.warn('WebGL context restored');
+      if (this.contextLostTimeoutId !== null) {
+        window.clearTimeout(this.contextLostTimeoutId);
+        this.contextLostTimeoutId = null;
+      }
+      this.onRenderIssue?.(null);
     });
 
     // 4. Lighting Setup
@@ -800,8 +822,28 @@ export class ThreeRenderer {
   private animate = () => {
     try {
       this.updateAndRender();
+      if (this.consecutiveRenderErrors > 0) {
+        // Recovered — clear whatever error banner a prior bad frame reported.
+        this.consecutiveRenderErrors = 0;
+        this.lastReportedRenderError = null;
+        this.onRenderIssue?.(null);
+      }
     } catch (err) {
       console.error('updateAndRender threw:', err);
+      this.consecutiveRenderErrors++;
+      // A handful of consecutive throws (not one, which could be a one-off
+      // transient) means the frame loop is never reaching render() —
+      // that's exactly what a silent, permanently blank canvas looks like.
+      // Surface it visibly (not just to DevTools a non-technical player
+      // will never open) with the actual error, so it's diagnosable from a
+      // screenshot instead of guessed at again.
+      if (this.consecutiveRenderErrors >= 5) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message !== this.lastReportedRenderError) {
+          this.lastReportedRenderError = message;
+          this.onRenderIssue?.(`3D view crashed: ${message}`);
+        }
+      }
     }
     this.animFrameId = requestAnimationFrame(this.animate);
   };
@@ -842,6 +884,7 @@ export class ThreeRenderer {
 
   public destroy() {
     if (this.animFrameId !== null) cancelAnimationFrame(this.animFrameId);
+    if (this.contextLostTimeoutId !== null) window.clearTimeout(this.contextLostTimeoutId);
     this.resizeObserver.disconnect();
     window.removeEventListener('resize', this.onWindowResize);
     this.renderer.dispose();
