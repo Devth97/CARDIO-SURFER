@@ -4,7 +4,6 @@ import confetti from 'canvas-confetti';
 import {
   Trophy,
   RotateCcw,
-  Sparkles,
   Coins,
   ArrowUp,
   ArrowDown,
@@ -38,14 +37,14 @@ export default function GameOverScreen({ stats, reason, rank, onRestart, onViewL
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: ['#00f0ff', '#ff00c8', '#ffea00'],
+          colors: ['#ffd700', '#e53935', '#4fc3f7', '#43a047'],
         });
         confetti({
           particleCount: 4,
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: ['#00f0ff', '#ff00c8', '#ffea00'],
+          colors: ['#ffd700', '#e53935', '#4fc3f7', '#43a047'],
         });
 
         if (Date.now() < end) {
@@ -87,7 +86,7 @@ export default function GameOverScreen({ stats, reason, rank, onRestart, onViewL
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 15 }}
         >
-          <Sparkles size={18} /> NEW HIGH SCORE RECORD! <Sparkles size={18} />
+          NEW HIGH SCORE RECORD!
         </motion.div>
       ) : (
         reason && <p className="subtitle reason-text">{reason}</p>

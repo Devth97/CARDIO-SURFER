@@ -879,8 +879,7 @@
 .overlay {
   position: absolute;
   inset: 0;
-  background: rgba(6, 8, 14, 0.88);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, var(--color-sky-top) 0%, var(--color-sky-mid) 55%, var(--color-sky-bottom) 100%);
   z-index: 20;
 }
 
@@ -898,19 +897,19 @@
   width: 72px;
   height: 72px;
   border-radius: 18px;
-  border: 2px solid rgba(0, 240, 255, 0.4);
+  border: 3px solid #ffffff;
 }
 
 .game-over-title {
   font-size: 36px;
-  background: linear-gradient(90deg, #ff0055, #ff6a00);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: var(--color-title-fill);
+  -webkit-text-stroke: 2px var(--color-title-stroke);
 }
 
 .new-record-banner {
-  background: linear-gradient(90deg, #ffea00, #ff9100);
-  color: #000;
+  background: linear-gradient(180deg, var(--color-btn-gold-top), var(--color-btn-gold-bottom));
+  color: #7a3300;
+  border: 3px solid #ffffff;
   font-weight: 900;
   padding: 6px 20px;
   border-radius: 999px;
@@ -922,18 +921,19 @@
 }
 
 .reason-text {
-  color: #cbd5e1;
+  color: #ffffff;
   font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .calories-hero-card {
-  background: linear-gradient(135deg, rgba(255, 106, 0, 0.22) 0%, rgba(255, 0, 85, 0.22) 100%);
-  border: 2px solid rgba(255, 106, 0, 0.5);
+  background: #ffffff;
+  border: 3px solid var(--color-accent-gold);
   border-radius: 20px;
   padding: 16px 24px;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 8px 30px rgba(255, 106, 0, 0.25);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -947,41 +947,34 @@
 }
 
 .flame-icon {
-  color: #ff6a00;
-  animation: flamePulse 1.5s infinite;
-}
-
-@keyframes flamePulse {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px #ff6a00); }
-  50% { transform: scale(1.15); filter: drop-shadow(0 0 16px #ff0055); }
+  color: var(--color-accent-red);
 }
 
 .calories-val {
   font-size: 40px;
   font-weight: 900;
-  color: #ffea00;
+  color: var(--color-accent-red);
   line-height: 1;
-  text-shadow: 0 2px 0 #000;
 }
 
 .calories-unit {
   font-size: 14px;
   font-weight: 900;
-  color: #ffaa00;
+  color: #ff9800;
   letter-spacing: 1px;
 }
 
 .calories-subtext {
   font-size: 12px;
-  color: #e2e8f0;
+  color: var(--color-text-dark);
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .stats-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 3px solid #ffffff;
   padding: 16px 24px;
   border-radius: 20px;
   display: flex;
@@ -995,13 +988,13 @@
 .main-score-val {
   font-size: 44px;
   font-weight: 900;
-  color: #00f0ff;
+  color: var(--color-sky-bottom);
   line-height: 1;
 }
 
 .main-score-lbl {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   letter-spacing: 1px;
   font-weight: bold;
 }
@@ -1016,7 +1009,7 @@
 .stat-value {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text-dark);
 }
 
 .icon-stat {
@@ -1026,15 +1019,15 @@
   gap: 4px;
 }
 
-.icon-stat .gold { color: #ffd700; }
-.icon-stat .amber { color: #ffaa00; }
-.icon-stat .teal { color: #00f0ff; }
-.icon-stat .pink { color: #ff00c8; }
-.icon-stat .purple { color: #d000ff; }
+.icon-stat .gold { color: var(--color-accent-gold); }
+.icon-stat .amber { color: #ff9800; }
+.icon-stat .teal { color: var(--color-sky-bottom); }
+.icon-stat .pink { color: var(--color-accent-red); }
+.icon-stat .purple { color: var(--color-accent-red); }
 
 .stat-label {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   text-transform: uppercase;
 }
 
@@ -1134,9 +1127,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 215, 0, 0.1);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  color: #ffd700;
+  background: #ffffff;
+  border: 2px solid var(--color-accent-gold);
+  color: var(--color-text-dark);
   padding: 6px 16px;
   border-radius: 999px;
   font-size: 13px;
