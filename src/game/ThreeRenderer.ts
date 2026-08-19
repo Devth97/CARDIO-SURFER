@@ -252,14 +252,14 @@ export class ThreeRenderer {
   private contextLostTimeoutId: number | null = null;
   private consecutiveRenderErrors = 0;
   private lastReportedRenderError: string | null = null;
-  // TEMPORARY diagnostic — see the comment on .hud-debug-panel in HUD.tsx.
-  // No banner appeared during a reported blank-canvas occurrence, ruling out
-  // both webglcontextlost and repeated render exceptions, which points back
-  // to a sizing issue — but the earlier ResizeObserver fix (97a9a17) only
-  // re-corrects size on an actual *change*; if the container is wrong from
-  // the very first layout and then stays stable at that wrong size, it'd
-  // never fire again. Reports the real numbers on every size computation so
-  // the next occurrence is diagnosable from a screenshot instead of guessed.
+  // TEMPORARY diagnostics for the still-unresolved blank-canvas bug. A live
+  // on-device readout already ruled out sizing (confirmed a completely
+  // normal, non-degenerate canvas size at the moment of a blank occurrence)
+  // — see reportSize below, still active for the same investigation. These
+  // two catch the next most plausible failure modes: a NaN camera transform,
+  // and a context that's lost but never fired its event.
+  private nanCameraReported = false;
+  private silentContextLossReported = false;
   private onSizeReport: ((info: string) => void) | null;
 
   constructor(
@@ -331,8 +331,16 @@ export class ThreeRenderer {
     const dirLight = new THREE.DirectionalLight('#ffffff', 2.0);
     dirLight.position.set(10, 30, 5);
     dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
+    // Was 2048x2048 (4x the framebuffer memory of 1024x1024) — running
+    // concurrently for the whole session with MediaPipe's own separate
+    // GPU-accelerated WebGL context (continuous pose inference every frame,
+    // see PoseTracker.ts's `delegate: 'GPU'`), that's real GPU memory/
+    // bandwidth pressure on a mobile device. A leading (unconfirmed)
+    // hypothesis for a reported blank-3D-canvas bug is context loss/restore
+    // cycling too fast to trip the existing recovery banner. 1024 is still
+    // plenty of shadow resolution for this close chase-cam view distance.
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
     dirLight.shadow.camera.near = 0.5;
     dirLight.shadow.camera.far = 120;
     dirLight.shadow.camera.left = -25;
@@ -829,6 +837,45 @@ export class ThreeRenderer {
       const worldX = LANE_X_POSITIONS[p.lane];
       const bobY = Math.sin(elapsedTime * 5 + p.id) * 0.3;
       mesh.position.set(worldX, 1.8 + bobY, worldZ);
+    }
+
+    // TEMPORARY diagnostic for an unconfirmed blank-canvas hypothesis — see
+    // the shadow-map-size comment above. Two conditions that would produce
+    // exactly the reported symptom (canvas keeps clearing to the scene
+    // background color, no exception, no webglcontextlost event) without
+    // either of the two failure modes already instrumented for: a NaN
+    // camera transform (self-heals by resetting to the last known-good
+    // position, since jumping back to a sane camera state is strictly
+    // better than staying invisible either way), and a context that's
+    // actually lost but never fired its event (checked directly, not
+    // inferred). Both report through the existing onRenderIssue banner with
+    // a specific message so the next occurrence is confirmed, not guessed.
+    if (!Number.isFinite(this.camera.position.x) || !Number.isFinite(this.camera.position.y)) {
+      if (!this.nanCameraReported) {
+        this.nanCameraReported = true;
+        this.onRenderIssue?.('3D view: camera position went NaN — resetting.');
+      }
+      this.playerGroup.position.set(0, 0, PLAYER_WORLD_Z);
+      this.camera.position.set(0, CAMERA_HEIGHT, CAMERA_WORLD_Z);
+      this.camera.lookAt(0, CAMERA_LOOKAT_Y, CAMERA_LOOKAT_Z);
+    } else if (this.nanCameraReported) {
+      this.nanCameraReported = false;
+      this.onRenderIssue?.(null);
+    }
+
+    if (this.renderer.getContext().isContextLost()) {
+      // Don't call render() into a lost context — animate()'s own trailing
+      // requestAnimationFrame call (in its try/catch, after this method
+      // returns) already schedules the next frame; scheduling one here too
+      // would double it.
+      if (!this.silentContextLossReported) {
+        this.silentContextLossReported = true;
+        this.onRenderIssue?.('3D view: WebGL context is lost (no event fired).');
+      }
+      return;
+    } else if (this.silentContextLossReported) {
+      this.silentContextLossReported = false;
+      this.onRenderIssue?.(null);
     }
 
     // Render WebGL Frame
