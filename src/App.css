@@ -1147,7 +1147,7 @@
 /* ---------- Leaderboard screen ---------- */
 
 .leaderboard-screen {
-  background: radial-gradient(circle at center, #1b1536 0%, #080711 100%);
+  background: linear-gradient(180deg, var(--color-sky-top) 0%, var(--color-sky-mid) 55%, var(--color-sky-bottom) 100%);
   justify-content: flex-start;
   padding-top: 24px;
 }
@@ -1174,9 +1174,9 @@
 
 .tab {
   flex: 1;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #b8c0d6;
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: #ffffff;
   padding: 10px;
   border-radius: 10px;
   font-size: 13px;
@@ -1186,9 +1186,8 @@
 }
 
 .tab.active {
-  background: rgba(0, 240, 255, 0.15);
-  border-color: rgba(0, 240, 255, 0.4);
-  color: #00f0ff;
+  background: #ffffff;
+  color: var(--color-sky-bottom);
 }
 
 .leaderboard-list {
@@ -1196,6 +1195,9 @@
   max-width: 440px;
   overflow-y: auto;
   flex: 1;
+  background: var(--color-card-bg);
+  border-radius: 20px 20px 0 0;
+  padding: 14px;
 }
 
 .leaderboard-row {
@@ -1203,20 +1205,22 @@
   align-items: center;
   gap: 10px;
   padding: 10px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #f0e0c0;
   font-size: 14px;
-  color: #e2e8f0;
+  color: var(--color-text-dark);
 }
 
 .leaderboard-row.you {
-  background: rgba(0, 240, 255, 0.08);
-  border-radius: 8px;
+  background: #fff9c4;
+  border: 2px solid var(--color-accent-gold);
+  border-radius: 12px;
+  padding: 8px 6px;
 }
 
 .leaderboard-rank {
   width: 26px;
   text-align: center;
-  color: #7e8b9b;
+  color: var(--color-text-muted);
   font-weight: 700;
 }
 
@@ -1228,7 +1232,7 @@
 }
 
 .leaderboard-avatar.placeholder {
-  background: rgba(0, 240, 255, 0.25);
+  background: var(--color-sky-bottom);
 }
 
 .leaderboard-name {
@@ -1244,7 +1248,7 @@
   align-items: center;
   gap: 4px;
   font-weight: 700;
-  color: #ffd700;
+  color: var(--color-accent-red);
 }
 
 .leaderboard-error {
