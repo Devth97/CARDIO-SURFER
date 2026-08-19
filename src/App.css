@@ -794,30 +794,29 @@
   font-weight: 800;
   padding: 8px 18px;
   border-radius: 999px;
-  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   gap: 6px;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .hud-pose-badge.teal {
-  background: rgba(0, 240, 255, 0.25);
-  border: 2px solid #00f0ff;
-  color: #00f0ff;
+  background: #ffffff;
+  border: 2px solid var(--color-sky-bottom);
+  color: var(--color-sky-bottom);
 }
 
 .hud-pose-badge.amber {
-  background: rgba(255, 170, 0, 0.3);
-  border: 2px solid #ffaa00;
-  color: #ffaa00;
+  background: #ffffff;
+  border: 2px solid #ff9800;
+  color: #ff9800;
 }
 
 .hud-pose-badge.purple {
-  background: rgba(180, 0, 255, 0.3);
-  border: 2px solid #d000ff;
-  color: #d000ff;
+  background: #ffffff;
+  border: 2px solid var(--color-accent-red);
+  color: var(--color-accent-red);
 }
 
 .hud-powerups {
@@ -835,28 +834,25 @@
   font-weight: bold;
   padding: 4px 12px;
   border-radius: 999px;
-  backdrop-filter: blur(8px);
+  background: #ffffff;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .powerup-badge.shield {
-  background: rgba(0, 240, 255, 0.2);
-  border: 1px solid #00f0ff;
-  color: #00f0ff;
+  border: 2px solid var(--color-sky-bottom);
+  color: var(--color-sky-bottom);
 }
 
 .powerup-badge.magnet {
-  background: rgba(255, 0, 85, 0.2);
-  border: 1px solid #ff0055;
-  color: #ff0055;
+  border: 2px solid var(--color-accent-red);
+  color: var(--color-accent-red);
 }
 
 .powerup-badge.star {
-  background: rgba(255, 234, 0, 0.2);
-  border: 1px solid #ffea00;
-  color: #ffea00;
+  border: 2px solid var(--color-accent-gold);
+  color: #f9a825;
 }
 
 .hud-warning {
