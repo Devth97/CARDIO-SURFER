@@ -1125,7 +1125,7 @@
 }
 
 .text-link:hover {
-  text-decoration: underline;
+  opacity: 0.75;
 }
 
 /* ---------- Weekly rank badge (GameOverScreen) ---------- */
