@@ -1068,8 +1068,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #ffffff;
   border-radius: 999px;
   padding: 6px 10px 6px 6px;
 }
@@ -1082,12 +1082,12 @@
 }
 
 .player-badge-avatar.placeholder {
-  background: rgba(0, 240, 255, 0.25);
+  background: var(--color-sky-bottom);
 }
 
 .player-badge-name {
   font-size: 12px;
-  color: #e2e8f0;
+  color: var(--color-text-dark);
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1097,7 +1097,7 @@
 .player-badge-signout {
   background: none;
   border: none;
-  color: #b8c0d6;
+  color: var(--color-text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1105,22 +1105,23 @@
 }
 
 .player-badge-signout:hover {
-  color: #ff5252;
+  color: var(--color-accent-red);
 }
 
 /* ---------- Sign-in screen ---------- */
 
 .sign-in-screen {
-  background: radial-gradient(circle at center, #1b1536 0%, #080711 100%);
+  background: linear-gradient(180deg, var(--color-sky-top) 0%, var(--color-sky-mid) 55%, var(--color-sky-bottom) 100%);
 }
 
 .text-link {
   background: none;
   border: none;
-  color: #00f0ff;
+  color: #ffffff;
   font-size: 13px;
   cursor: pointer;
   padding: 6px;
+  text-decoration: underline;
 }
 
 .text-link:hover {
