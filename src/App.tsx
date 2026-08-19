@@ -44,7 +44,20 @@ export default function App() {
     setError(null);
     setLoading(true);
     try {
-      await poseTracker.init();
+      // poseTracker.init() downloads the pose-detection WASM runtime and ML
+      // model (several MB) from external CDNs with no timeout of its own —
+      // on a slow/flaky connection the fetch can just hang, never resolving
+      // *or* rejecting, which leaves this whole try/catch permanently
+      // suspended: the button stays stuck on "Loading Pose Model…", disabled,
+      // with no error shown and no way to retry short of force-closing the
+      // app. Race it against a bounded timeout so a stall surfaces as a
+      // normal, retry-able error instead.
+      await Promise.race([
+        poseTracker.init(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timed out loading the pose model')), 25000),
+        ),
+      ]);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false,
