@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles,
   ArrowUp,
   ArrowDown,
   Keyboard,
@@ -128,7 +127,7 @@ export default function TutorialGuideModal({ onClose }: Props) {
 
         <div className="tutorial-header">
           <div className="tutorial-badge">
-            <Sparkles size={14} /> HOW TO PLAY ({step + 1}/{steps.length})
+            HOW TO PLAY ({step + 1}/{steps.length})
           </div>
           <h2 className="tutorial-title">{steps[step].title}</h2>
           <p className="tutorial-subtitle">{steps[step].subtitle}</p>

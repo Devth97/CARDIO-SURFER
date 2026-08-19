@@ -404,8 +404,7 @@
 .tutorial-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 12, 0.88);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -414,27 +413,27 @@
 }
 
 .tutorial-modal-card {
-  background: rgba(14, 18, 32, 0.95);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+  background: var(--color-card-bg);
+  border: 4px solid #ffffff;
   border-radius: 24px;
   width: 100%;
   max-width: 520px;
-  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
   padding: 28px 24px;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  color: #fff;
+  color: var(--color-text-dark);
 }
 
 .tutorial-close-btn {
   position: absolute;
   top: 18px;
   right: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #aaa;
+  background: #f5f0e0;
+  border: 2px solid #e0d0a0;
+  color: var(--color-text-dark);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -442,20 +441,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s;
+  transition: background 0.15s;
 }
 
 .tutorial-close-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.18);
+  background: #e8dcc0;
 }
 
 .tutorial-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 240, 255, 0.15);
-  color: #00f0ff;
+  background: var(--color-accent-red);
+  color: #ffffff;
   font-size: 11px;
   font-weight: 800;
   padding: 4px 12px;
@@ -468,11 +466,11 @@
   font-size: 24px;
   font-weight: 900;
   margin: 0 0 4px;
-  color: #fff;
+  color: var(--color-text-dark);
 }
 
 .tutorial-subtitle {
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 14px;
   margin: 0;
 }
@@ -497,7 +495,7 @@
 }
 
 .tutorial-desc {
-  color: #cbd5e1;
+  color: var(--color-text-dark);
   font-size: 15px;
   line-height: 1.5;
   margin: 0;
@@ -505,8 +503,8 @@
 }
 
 .tutorial-tips-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 2px solid #f0e0c0;
   border-radius: 14px;
   padding: 14px 18px;
   display: flex;
@@ -519,13 +517,13 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: #e2e8f0;
+  color: var(--color-text-dark);
 }
 
-.teal { color: #00f0ff; }
-.amber { color: #ffaa00; }
-.purple { color: #d000ff; }
-.pink { color: #ff00c8; }
+.teal { color: var(--color-sky-bottom); }
+.amber { color: #ff9800; }
+.purple { color: var(--color-accent-red); }
+.pink { color: var(--color-accent-red); }
 
 .tutorial-gestures-grid {
   display: flex;
@@ -534,8 +532,8 @@
 }
 
 .gesture-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 2px solid #f0e0c0;
   padding: 12px 16px;
   border-radius: 12px;
   text-align: left;
@@ -550,14 +548,14 @@
   margin-bottom: 4px;
 }
 
-.gesture-card.teal .gesture-card-header { color: #00f0ff; }
-.gesture-card.amber .gesture-card-header { color: #ffaa00; }
-.gesture-card.purple .gesture-card-header { color: #d000ff; }
+.gesture-card.teal .gesture-card-header { color: var(--color-sky-bottom); }
+.gesture-card.amber .gesture-card-header { color: #ff9800; }
+.gesture-card.purple .gesture-card-header { color: var(--color-accent-red); }
 
 .gesture-card p {
   margin: 0;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .tutorial-powerups-list {
@@ -576,13 +574,13 @@
   text-align: left;
 }
 
-.powerup-info-row.shield { background: rgba(0, 240, 255, 0.1); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.2); }
-.powerup-info-row.magnet { background: rgba(255, 0, 85, 0.1); color: #ff0055; border: 1px solid rgba(255, 0, 85, 0.2); }
-.powerup-info-row.star { background: rgba(255, 234, 0, 0.1); color: #ffea00; border: 1px solid rgba(255, 234, 0, 0.2); }
+.powerup-info-row.shield { background: #e3f2fd; color: var(--color-sky-bottom); border: 2px solid var(--color-sky-bottom); }
+.powerup-info-row.magnet { background: #ffebee; color: var(--color-accent-red); border: 2px solid var(--color-accent-red); }
+.powerup-info-row.star { background: #fffde7; color: #f9a825; border: 2px solid var(--color-accent-gold); }
 
 .tutorial-fallback-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: #f5f0e0;
+  border: 1px dashed #c0a060;
   border-radius: 12px;
   padding: 12px 16px;
   text-align: left;
@@ -591,7 +589,7 @@
 .fallback-header {
   font-weight: 700;
   font-size: 13px;
-  color: #cbd5e1;
+  color: var(--color-text-dark);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -601,7 +599,7 @@
 .tutorial-fallback-card p {
   margin: 0;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 
@@ -611,7 +609,7 @@
   justify-content: space-between;
   margin-top: 8px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 2px solid #f0e0c0;
 }
 
 .tutorial-dots {
@@ -623,13 +621,13 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e0d0a0;
   cursor: pointer;
   transition: background 0.2s, width 0.2s;
 }
 
 .tutorial-dots .dot.active {
-  background: #00f0ff;
+  background: var(--color-accent-red);
   width: 20px;
   border-radius: 999px;
 }
@@ -653,13 +651,13 @@
 }
 
 .tutorial-btn.primary {
-  background: linear-gradient(90deg, #00f0ff, #0088ff);
-  color: #040914;
+  background: linear-gradient(180deg, var(--color-btn-gold-top), var(--color-btn-gold-bottom));
+  color: #7a3300;
 }
 
 .tutorial-btn.secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+  background: #f5f0e0;
+  color: var(--color-text-dark);
 }
 
 .tutorial-btn:hover {
