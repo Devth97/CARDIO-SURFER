@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { browserLocalPersistence, getAuth, setPersistence } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,3 +13,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+
+// getAuth() alone leaves Firebase to auto-detect which storage to persist
+// the session in. In some Android WebView environments that feature
+// detection can behave unpredictably and silently land on a non-persistent
+// mode — indistinguishable from a real bug except that it looks exactly
+// like "signs out every time I leave and come back". Force localStorage-
+// backed persistence explicitly instead of trusting auto-detection.
+void setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.error('Failed to set auth persistence:', err);
+});
