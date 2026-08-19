@@ -93,6 +93,16 @@ export default function HUD({ stats, debug, onTogglePause, isPaused }: Props) {
         </div>
       )}
 
+      {/* TEMPORARY diagnostic readout — live gesture numbers, to see exactly
+          what's being computed on a real device instead of guessing at
+          thresholds blind. Remove once jump/duck are confirmed reliable. */}
+      {debug?.tracking && (
+        <div className="hud-debug-panel">
+          <div>rise {debug.upwardRise.toFixed(3)} / 0.070 {debug.jumpArmed ? '[ARMED]' : ''}</div>
+          <div>drop {debug.dropRatio.toFixed(3)} / 0.090 {debug.duckActive ? '[DUCK]' : ''}</div>
+        </div>
+      )}
+
       {/* Power-Ups bar */}
       <div className="hud-powerups">
         <AnimatePresence>

@@ -819,6 +819,23 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
+/* TEMPORARY diagnostic readout — see the comment on .hud-debug-panel's
+   JSX usage in HUD.tsx. */
+.hud-debug-panel {
+  position: absolute;
+  bottom: 70px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #00ff88;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 8px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
 .hud-pose-badge.teal {
   background: #ffffff;
   border: 2px solid var(--color-sky-bottom);

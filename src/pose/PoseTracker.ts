@@ -34,7 +34,9 @@ export interface PoseDebugState {
   bodyHeight: number;
   shiftRatio: number;
   dropRatio: number;
+  upwardRise: number;
   duckActive: boolean;
+  jumpArmed: boolean;
   landmarks: NormalizedLandmark[] | null;
 }
 
@@ -77,6 +79,7 @@ export class PoseTracker {
 
   private currentShiftRatio = 0;
   private currentDropRatio = 0;
+  private currentUpwardRise = 0;
 
   private actionListeners = new Set<ActionListener>();
   private debugListeners = new Set<DebugListener>();
@@ -113,7 +116,9 @@ export class PoseTracker {
       bodyHeight: this.bodyHeight,
       shiftRatio: this.currentShiftRatio,
       dropRatio: this.currentDropRatio,
+      upwardRise: this.currentUpwardRise,
       duckActive: this.duckActive,
+      jumpArmed: this.jumpArmed,
       landmarks,
     };
     for (const fn of this.debugListeners) fn(state);
@@ -273,7 +278,8 @@ export class PoseTracker {
     // no real displacement, so it needs smoothing just as much as the
     // position itself does.
     this.currentDropRatio = (this.smoothedY - this.baselineY) / this.bodyHeight;
-    const upwardRise = (this.baselineY - this.smoothedY) / this.bodyHeight;
+    this.currentUpwardRise = (this.baselineY - this.smoothedY) / this.bodyHeight;
+    const upwardRise = this.currentUpwardRise;
 
     // Slow baseline adaptation when standing comfortably upright
     if (!this.duckActive && Math.abs(this.currentDropRatio) < 0.05) {
