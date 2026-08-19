@@ -242,6 +242,7 @@ export class ThreeRenderer {
   private clock = new THREE.Clock();
   private animFrameId: number | null = null;
   private engine: GameEngine;
+  private resizeObserver: ResizeObserver;
 
   constructor(container: HTMLElement, engine: GameEngine) {
     this.container = container;
@@ -323,6 +324,16 @@ export class ThreeRenderer {
     this.scene.add(this.playerGroup);
 
     // 7. Handle Resize & Start Loop
+    // A plain `window: resize` listener isn't enough on Android WebViews:
+    // right after cold start the container can still be 0x0 (or mid-layout)
+    // when this constructor runs, and the WebView often never dispatches a
+    // `resize` DOM event once its own layout/insets settle — so the renderer
+    // was getting stuck at its garbage initial size (or the constructor's
+    // `|| 1` fallback), rendering nothing but its flat blue clear color
+    // forever. ResizeObserver fires whenever the container's actual box
+    // changes for any reason, including that first post-layout settle.
+    this.resizeObserver = new ResizeObserver(() => this.onWindowResize());
+    this.resizeObserver.observe(container);
     window.addEventListener('resize', this.onWindowResize);
     this.animate();
   }
@@ -831,6 +842,7 @@ export class ThreeRenderer {
 
   public destroy() {
     if (this.animFrameId !== null) cancelAnimationFrame(this.animFrameId);
+    this.resizeObserver.disconnect();
     window.removeEventListener('resize', this.onWindowResize);
     this.renderer.dispose();
     if (this.renderer.domElement.parentElement) {

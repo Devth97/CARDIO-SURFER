@@ -37,8 +37,14 @@
   position: relative;
   height: 100%;
   width: 100%;
+  /* Only cap width (for wide/short desktop windows) — never cap height.
+     Real phones are routinely taller than 9:16 (e.g. 19.5:9), and capping
+     height here left .app's own dark background exposed as black bars
+     above/below the frame, pushing the whole HUD down. The 3D canvas
+     already pillarboxes itself independently (see MIN/MAX_RENDER_ASPECT
+     in ThreeRenderer.ts), so the frame itself just needs to fill 100%
+     of the available height on any phone. */
   max-width: calc(100svh * 0.5625); /* 9:16 */
-  max-height: calc(100vw / 0.5625);
   overflow: hidden;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
 }
@@ -88,7 +94,9 @@
 }
 
 .camera-preview.mode-mini {
-  top: 16px;
+  /* Sits below the score/coin boxes in .hud-top-right (top:16px, right:20px,
+     column stack ~92px tall) so the two don't render on top of each other. */
+  top: 124px;
   right: 16px;
   width: 140px;
   height: 105px;
