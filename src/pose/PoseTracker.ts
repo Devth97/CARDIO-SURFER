@@ -7,6 +7,7 @@ import {
   JUMP_ARMED_TIMEOUT_MS,
   JUMP_COOLDOWN_MS,
   JUMP_DISPLACEMENT_RATIO,
+  JUMP_MIN_HOLD_MS,
   JUMP_RELEASE_RATIO,
   MIN_LANDMARK_CONFIDENCE,
   SMOOTHING_ALPHA,
@@ -67,6 +68,7 @@ export class PoseTracker {
   private jumpArmed = false;
   private jumpArmedAt = 0;
   private lastJumpAt = -Infinity;
+  private riseAboveThresholdSinceMs: number | null = null;
 
   private rightHandArmed = false;
   private leftHandArmed = false;
@@ -136,6 +138,7 @@ export class PoseTracker {
     this.calibrated = true;
     this.duckActive = false;
     this.jumpArmed = false;
+    this.riseAboveThresholdSinceMs = null;
     this.rightHandArmed = false;
     this.leftHandArmed = false;
   }
@@ -278,6 +281,22 @@ export class PoseTracker {
     }
 
     // --- INSTANT HIGH-SENSITIVITY JUMP: Upward rise >= 6% above standing baseline ---
+    // Track how long the rise has stayed above threshold, not just whether
+    // it's above threshold right now. EMA smoothing reduces noise but
+    // doesn't eliminate it — a single noisy frame can still spike the
+    // smoothed value past the threshold for one instant even with smoothing
+    // in place, firing a JUMP with no real movement behind it. A genuine
+    // jump stays elevated far longer than one frame, so requiring the rise
+    // to persist for JUMP_MIN_HOLD_MS costs no perceptible responsiveness on
+    // a real jump while rejecting single-frame spikes.
+    if (upwardRise > JUMP_DISPLACEMENT_RATIO) {
+      if (this.riseAboveThresholdSinceMs === null) this.riseAboveThresholdSinceMs = nowMs;
+    } else {
+      this.riseAboveThresholdSinceMs = null;
+    }
+    const risenLongEnough =
+      this.riseAboveThresholdSinceMs !== null && nowMs - this.riseAboveThresholdSinceMs >= JUMP_MIN_HOLD_MS;
+
     // Unlike duck/hand-raise below, this had no "armed" latch — only the
     // cooldown timer gated re-triggering. A real jump keeps the body risen
     // above the threshold for longer than JUMP_COOLDOWN_MS (actual airtime
@@ -286,7 +305,7 @@ export class PoseTracker {
     // "continuously jumping" from one real jump looks like. Require
     // dropping back below JUMP_RELEASE_RATIO before arming again, same
     // pattern as duckActive/rightHandArmed/leftHandArmed.
-    if (!this.jumpArmed && upwardRise > JUMP_DISPLACEMENT_RATIO && nowMs - this.lastJumpAt > JUMP_COOLDOWN_MS) {
+    if (!this.jumpArmed && risenLongEnough && nowMs - this.lastJumpAt > JUMP_COOLDOWN_MS) {
       this.jumpArmed = true;
       this.jumpArmedAt = nowMs;
       this.lastJumpAt = nowMs;

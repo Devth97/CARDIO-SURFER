@@ -5,6 +5,13 @@ export const MIN_LANDMARK_CONFIDENCE = 0.28;
 
 // Instant High-Sensitivity Jump: Upward shoulder/head displacement of 7% above standing baseline.
 export const JUMP_DISPLACEMENT_RATIO = 0.07; // 7% upward rise above baseline standing position
+// EMA smoothing (SMOOTHING_ALPHA) alone can still let a single noisy frame
+// spike past the threshold — smoothing reduces noise, it doesn't eliminate a
+// single-frame outlier. Require the rise to stay above threshold for this
+// long (roughly 1-2 frames at typical camera framerates) before it counts as
+// a real jump, not just a blip. Short enough to be imperceptible for an
+// actual jump, which stays elevated far longer than this.
+export const JUMP_MIN_HOLD_MS = 45;
 export const JUMP_RELEASE_RATIO = 0.035; // Must fall back below 3.5% rise before another jump can arm
 export const JUMP_COOLDOWN_MS = 220; // Fast 220ms consecutive jump cooldown
 // Failsafe: if the player's post-landing resting position never quite settles
