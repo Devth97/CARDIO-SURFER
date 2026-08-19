@@ -151,6 +151,10 @@
   font-size: 22px;
   color: var(--color-text-dark);
   -webkit-text-stroke: 0;
+  /* .title's hard-edged 4px shadow is designed to pair with its stroke —
+     without the stroke to anchor it, the shadow reads as a disconnected
+     ghost copy of the text instead of a clean outline. */
+  text-shadow: none;
   display: flex;
   align-items: center;
   gap: 8px;
