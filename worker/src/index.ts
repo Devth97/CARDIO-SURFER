@@ -13,7 +13,15 @@ function corsHeaders(origin: string): HeadersInit {
 function json(data: unknown, status: number, origin: string): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+    headers: {
+      'Content-Type': 'application/json',
+      // Defense-in-depth per VibeSec-Skill's security-headers checklist —
+      // low severity for a pure JSON API (nothing here is HTML that could
+      // be framed/sniffed into executing), but free and correct to set.
+      'X-Content-Type-Options': 'nosniff',
+      'Cache-Control': 'no-store',
+      ...corsHeaders(origin),
+    },
   });
 }
 
