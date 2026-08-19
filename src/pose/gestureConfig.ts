@@ -14,9 +14,15 @@ export const JUMP_COOLDOWN_MS = 220; // Fast 220ms consecutive jump cooldown
 // first. Force a re-arm after this long regardless of position.
 export const JUMP_ARMED_TIMEOUT_MS = 900;
 
-// Duck: Requires a clear 16% downward squat drop below standing baseline.
-export const DUCK_DROP_RATIO = 0.16; // 16% downward squat drop below baseline standing position
-export const DUCK_RELEASE_RATIO = 0.06; // Return to within 6% of standing releases duck
+// Duck: requires a clear downward squat drop below standing baseline.
+// Was 0.16 — literally double the 0.08 the HUD's pose badge used to call
+// "DUCKING", so a normal/moderate squat lit up the badge (misleadingly
+// signaling detection) without ever reaching the ratio that actually
+// triggers DUCK_START. Lowered to line up with what was already being
+// treated elsewhere as duck-worthy movement; both smoothing fixes (62f95bb)
+// make this comfortably safe against standing-still noise now.
+export const DUCK_DROP_RATIO = 0.09;
+export const DUCK_RELEASE_RATIO = 0.04; // Return to within 4% of standing releases duck
 
 // Hand Raise Steering: Raising wrist above shoulder height by 5% of body height.
 export const HAND_RAISE_TRIGGER_OFFSET = 0.05; // 5% body height above shoulder line

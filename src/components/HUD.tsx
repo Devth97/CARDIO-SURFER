@@ -35,13 +35,17 @@ export default function HUD({ stats, debug, onTogglePause, isPaused }: Props) {
 
   const { activePowerUps } = stats;
 
-  const drop = debug?.dropRatio ?? 0;
   const isDucking = debug?.duckActive ?? false;
   const rightHand = debug?.rightHandRaised ?? false;
   const leftHand = debug?.leftHandRaised ?? false;
 
   let poseBadge = { label: 'RUNNING', color: 'teal', icon: <Activity size={14} /> };
-  if (isDucking || drop > 0.08) {
+  if (isDucking) {
+    // Badge must track duckActive alone (the same flag that actually fires
+    // DUCK_START) — it previously also lit up at drop > 0.08, a lower bar
+    // than DUCK_DROP_RATIO (0.16) that actually triggers the game action, so
+    // a moderate squat between 8-16% showed "DUCKING" here while the
+    // character never reacted. Misleading, not just cosmetic.
     poseBadge = { label: 'DUCKING', color: 'amber', icon: <ArrowDown size={14} /> };
   } else if (rightHand) {
     poseBadge = { label: 'RIGHT HAND (LANE RIGHT)', color: 'purple', icon: <Hand size={14} /> };
