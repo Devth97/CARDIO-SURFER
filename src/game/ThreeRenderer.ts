@@ -252,11 +252,26 @@ export class ThreeRenderer {
   private contextLostTimeoutId: number | null = null;
   private consecutiveRenderErrors = 0;
   private lastReportedRenderError: string | null = null;
+  // TEMPORARY diagnostic — see the comment on .hud-debug-panel in HUD.tsx.
+  // No banner appeared during a reported blank-canvas occurrence, ruling out
+  // both webglcontextlost and repeated render exceptions, which points back
+  // to a sizing issue — but the earlier ResizeObserver fix (97a9a17) only
+  // re-corrects size on an actual *change*; if the container is wrong from
+  // the very first layout and then stays stable at that wrong size, it'd
+  // never fire again. Reports the real numbers on every size computation so
+  // the next occurrence is diagnosable from a screenshot instead of guessed.
+  private onSizeReport: ((info: string) => void) | null;
 
-  constructor(container: HTMLElement, engine: GameEngine, onRenderIssue?: (message: string | null) => void) {
+  constructor(
+    container: HTMLElement,
+    engine: GameEngine,
+    onRenderIssue?: (message: string | null) => void,
+    onSizeReport?: (info: string) => void,
+  ) {
     this.container = container;
     this.engine = engine;
     this.onRenderIssue = onRenderIssue ?? null;
+    this.onSizeReport = onSizeReport ?? null;
 
     // 1. Scene & Atmosphere Setup
     this.scene = new THREE.Scene();
@@ -279,6 +294,7 @@ export class ThreeRenderer {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.centerCanvas();
     container.appendChild(this.renderer.domElement);
+    this.reportSize(renderWidth, renderHeight);
     // Without calling preventDefault() here, a lost WebGL context (a known
     // mobile-Chrome occurrence under memory/GPU pressure) is unrecoverable —
     // the canvas renders nothing but its own clear color for the rest of the
@@ -880,7 +896,15 @@ export class ThreeRenderer {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
     this.centerCanvas();
+    this.reportSize(width, height);
   };
+
+  private reportSize(renderWidth: number, renderHeight: number) {
+    this.onSizeReport?.(
+      `container ${this.container.clientWidth}x${this.container.clientHeight} → ` +
+        `canvas ${renderWidth.toFixed(0)}x${renderHeight.toFixed(0)} dpr=${window.devicePixelRatio}`,
+    );
+  }
 
   public destroy() {
     if (this.animFrameId !== null) cancelAnimationFrame(this.animFrameId);

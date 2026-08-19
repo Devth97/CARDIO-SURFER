@@ -836,6 +836,15 @@
   pointer-events: none;
 }
 
+.hud-debug-panel.size-debug {
+  bottom: auto;
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%);
+  z-index: 30;
+  color: #ffd700;
+}
+
 .hud-pose-badge.teal {
   background: #ffffff;
   border: 2px solid var(--color-sky-bottom);

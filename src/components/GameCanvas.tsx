@@ -16,6 +16,8 @@ export default function GameCanvas({ engine }: Props) {
   // a non-technical player, who'd just see an unexplained blank blue screen
   // with no way to tell it apart from a working-but-empty scene.
   const [renderIssue, setRenderIssue] = useState<string | null>(null);
+  // TEMPORARY diagnostic — see the comment on reportSize in ThreeRenderer.ts.
+  const [sizeInfo, setSizeInfo] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -23,7 +25,7 @@ export default function GameCanvas({ engine }: Props) {
     setRenderIssue(null);
 
     // Instantiate Three.js WebGL 3D Renderer
-    const renderer = new ThreeRenderer(container, engine, setRenderIssue);
+    const renderer = new ThreeRenderer(container, engine, setRenderIssue, setSizeInfo);
     rendererRef.current = renderer;
 
     let rafId = 0;
@@ -84,6 +86,7 @@ export default function GameCanvas({ engine }: Props) {
           <button onClick={() => window.location.reload()}>Reload</button>
         </div>
       )}
+      {sizeInfo && <div className="hud-debug-panel size-debug">{sizeInfo}</div>}
     </>
   );
 }
