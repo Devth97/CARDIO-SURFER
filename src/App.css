@@ -305,7 +305,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ---------- Calibration Screen & Nanobanana Graphic Art ---------- */
+/* ---------- Calibration Screen ---------- */
 
 .calibration-overlay {
   background: rgba(0, 0, 0, 0.35);
