@@ -1033,6 +1033,11 @@
   gap: 14px;
   max-width: 440px;
   width: 100%;
+  /* Same fix as .calibration-box: the existing @media (max-width: 480px)
+     3->2 column fallback below checks the browser window's width, not this
+     card's actual rendered width, so it misses the same short/wide-desktop
+     squeeze (.game-frame letterboxed narrow while the window stays wide). */
+  container-type: inline-size;
 }
 
 .main-score-val {
@@ -1054,6 +1059,12 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 12px 16px;
   width: 100%;
+}
+
+@container (max-width: 340px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .stat-value {

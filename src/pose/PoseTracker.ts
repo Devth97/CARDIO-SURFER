@@ -255,13 +255,17 @@ export class PoseTracker {
     ok: (i: number) => boolean,
   ) {
     this.currentShiftRatio = (this.smoothedX - this.baselineX) / bh;
-    // Use the smoothed Y (like currentShiftRatio uses smoothedX), not the raw
-    // per-frame value — comparing a single noisy frame against a threshold as
-    // tight as 7% of body height fires on ordinary landmark jitter alone,
-    // causing continuous false JUMPs that then starve DUCK_START (which only
-    // triggers from the 'running' state) of ever running.
-    this.currentDropRatio = (this.smoothedY - this.baselineY) / bh;
-    const upwardRise = (this.baselineY - this.smoothedY) / bh;
+    // Use the smoothed Y and smoothed body-height (like currentShiftRatio
+    // uses smoothedX), not the raw per-frame values — comparing a single
+    // noisy frame against a threshold as tight as 7% of body height fires on
+    // ordinary landmark jitter alone, causing continuous false JUMPs that
+    // then starve DUCK_START (which only triggers from the 'running' state)
+    // of ever running. bh in particular is a ratio *denominator*: a noisy
+    // frame where it reads smaller than usual inflates the ratio even with
+    // no real displacement, so it needs smoothing just as much as the
+    // position itself does.
+    this.currentDropRatio = (this.smoothedY - this.baselineY) / this.bodyHeight;
+    const upwardRise = (this.baselineY - this.smoothedY) / this.bodyHeight;
 
     // Slow baseline adaptation when standing comfortably upright
     if (!this.duckActive && Math.abs(this.currentDropRatio) < 0.05) {
