@@ -6,6 +6,7 @@ import {
   HAND_RAISE_TRIGGER_OFFSET,
   JUMP_COOLDOWN_MS,
   JUMP_DISPLACEMENT_RATIO,
+  JUMP_RELEASE_RATIO,
   MIN_LANDMARK_CONFIDENCE,
   SMOOTHING_ALPHA,
   TRACKING_LOST_MS,
@@ -62,6 +63,7 @@ export class PoseTracker {
   private calibrated = false;
 
   private duckActive = false;
+  private jumpArmed = false;
   private lastJumpAt = -Infinity;
 
   private rightHandArmed = false;
@@ -131,6 +133,7 @@ export class PoseTracker {
     this.baselineY = this.smoothedY;
     this.calibrated = true;
     this.duckActive = false;
+    this.jumpArmed = false;
     this.rightHandArmed = false;
     this.leftHandArmed = false;
   }
@@ -273,9 +276,20 @@ export class PoseTracker {
     }
 
     // --- INSTANT HIGH-SENSITIVITY JUMP: Upward rise >= 6% above standing baseline ---
-    if (upwardRise > JUMP_DISPLACEMENT_RATIO && nowMs - this.lastJumpAt > JUMP_COOLDOWN_MS) {
+    // Unlike duck/hand-raise below, this had no "armed" latch — only the
+    // cooldown timer gated re-triggering. A real jump keeps the body risen
+    // above the threshold for longer than JUMP_COOLDOWN_MS (actual airtime
+    // plus smoothing lag), so a single real jump could re-cross the
+    // threshold and fire JUMP several times before landing — exactly what
+    // "continuously jumping" from one real jump looks like. Require
+    // dropping back below JUMP_RELEASE_RATIO before arming again, same
+    // pattern as duckActive/rightHandArmed/leftHandArmed.
+    if (!this.jumpArmed && upwardRise > JUMP_DISPLACEMENT_RATIO && nowMs - this.lastJumpAt > JUMP_COOLDOWN_MS) {
+      this.jumpArmed = true;
       this.lastJumpAt = nowMs;
       this.emitAction('JUMP');
+    } else if (this.jumpArmed && upwardRise < JUMP_RELEASE_RATIO) {
+      this.jumpArmed = false;
     }
 
     // --- INSTANT HIGH-SENSITIVITY DUCK: Downward drop >= 8% below standing baseline ---

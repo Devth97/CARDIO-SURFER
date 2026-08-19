@@ -5,6 +5,7 @@ export const MIN_LANDMARK_CONFIDENCE = 0.28;
 
 // Instant High-Sensitivity Jump: Upward shoulder/head displacement of 7% above standing baseline.
 export const JUMP_DISPLACEMENT_RATIO = 0.07; // 7% upward rise above baseline standing position
+export const JUMP_RELEASE_RATIO = 0.03; // Must fall back below 3% rise before another jump can arm
 export const JUMP_COOLDOWN_MS = 220; // Fast 220ms consecutive jump cooldown
 
 // Duck: Requires a clear 16% downward squat drop below standing baseline.
