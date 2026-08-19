@@ -198,7 +198,7 @@ export default function StartScreen({
       </motion.div>
 
       <p className="hint">
-        💡 Keyboard arrows (↑ ↓ ← →) & Space bar also work as manual fallback!
+        Keyboard arrows (↑ ↓ ← →) & Space bar also work as manual fallback!
       </p>
 
       <AdBanner />

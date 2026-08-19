@@ -113,7 +113,7 @@
 }
 
 .start-screen {
-  background: radial-gradient(circle at center, #1b1536 0%, #080711 100%);
+  background: linear-gradient(180deg, var(--color-sky-top) 0%, var(--color-sky-mid) 55%, var(--color-sky-bottom) 100%);
 }
 
 .logo-container {
@@ -124,15 +124,9 @@
   width: 110px;
   height: 110px;
   border-radius: 28px;
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.4), 0 8px 25px rgba(0, 0, 0, 0.6);
-  border: 3px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 6px 0 var(--color-border-navy), 0 8px 14px rgba(0, 0, 0, 0.25);
+  border: 4px solid #ffffff;
   object-fit: cover;
-  animation: logoPulse 4s ease-in-out infinite;
-}
-
-@keyframes logoPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 240, 255, 0.4); }
-  50% { transform: scale(1.04); box-shadow: 0 0 45px rgba(255, 0, 200, 0.5); }
 }
 
 .title {
@@ -140,39 +134,37 @@
   font-weight: 900;
   margin: 0;
   letter-spacing: 1.5px;
-  background: linear-gradient(180deg, #ffea00 0%, #ff9100 50%, #e63946 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 4px 0 #000, 0 8px 20px rgba(255, 145, 0, 0.4);
+  color: var(--color-title-fill);
+  -webkit-text-stroke: 2.5px var(--color-title-stroke);
+  text-shadow: 0 4px 0 var(--color-title-stroke);
 }
 
 .title.small {
   font-size: 22px;
-  color: #fff;
-  background: none;
-  -webkit-text-fill-color: unset;
+  color: var(--color-text-dark);
+  -webkit-text-stroke: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .title-icon {
-  color: #00f0ff;
+  color: var(--color-accent-red);
 }
 
 .subtitle {
   max-width: 480px;
-  color: #b8c0d6;
+  color: #ffffff;
   line-height: 1.5;
   margin: 0;
   font-size: 15px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .high-score-badge {
-  background: rgba(255, 215, 0, 0.15);
-  border: 1px solid rgba(255, 215, 0, 0.4);
-  color: #ffd700;
+  background: #ffffff;
+  border: 2px solid var(--color-accent-gold);
+  color: var(--color-text-dark);
   padding: 6px 18px;
   border-radius: 999px;
   font-size: 14px;
@@ -195,9 +187,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: var(--color-card-bg);
+  border: none;
   padding: 16px 20px;
   border-radius: 16px;
   max-width: 440px;
@@ -209,7 +200,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  color: #e2e8f0;
+  color: var(--color-text-dark);
   font-size: 14px;
 }
 
@@ -223,9 +214,9 @@
   flex-shrink: 0;
 }
 
-.rule-icon.teal { background: rgba(0, 240, 255, 0.15); color: #00f0ff; }
-.rule-icon.amber { background: rgba(255, 170, 0, 0.15); color: #ffaa00; }
-.rule-icon.purple { background: rgba(180, 0, 255, 0.15); color: #d000ff; }
+.rule-icon.teal { background: #e3f2fd; color: var(--color-sky-bottom); }
+.rule-icon.amber { background: #fff3e0; color: #ff9800; }
+.rule-icon.purple { background: #ffebee; color: var(--color-accent-red); }
 
 .error {
   color: #ff5252;
@@ -236,9 +227,11 @@
 }
 
 .hint {
-  color: #7e8b9b;
+  color: #ffffff;
+  opacity: 0.85;
   font-size: 13px;
   max-width: 420px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .actions-row {
@@ -249,16 +242,16 @@
 }
 
 .primary-btn {
-  background: linear-gradient(180deg, #ffea00 0%, #ff9100 100%);
-  color: #040914;
-  border: 2px solid #ffffff;
+  background: linear-gradient(180deg, var(--color-btn-gold-top) 0%, var(--color-btn-gold-bottom) 100%);
+  color: #7a3300;
+  border: 3px solid #ffffff;
   padding: 14px 34px;
   font-size: 16px;
   font-weight: 900;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 6px 24px rgba(255, 177, 3, 0.5);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 5px 0 #c66900;
+  transition: transform 0.1s ease;
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
@@ -266,8 +259,8 @@
 }
 
 .primary-btn:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 30px rgba(255, 177, 3, 0.7);
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #c66900;
 }
 
 .primary-btn:disabled {
@@ -280,8 +273,8 @@
 }
 
 @keyframes btnPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 177, 3, 0.5); }
-  50% { box-shadow: 0 0 35px rgba(255, 177, 3, 0.9); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 
 .icon-btn {
