@@ -1199,6 +1199,13 @@
 
 .leaderboard-header .title {
   font-size: 24px;
+  /* .title's 2.5px stroke and 4px shadow offset are tuned for its default
+     42px size. Left un-scaled at this much smaller 24px size, they're
+     proportionally far heavier — on an 11-letter word like "LEADERBOARD"
+     the stroke/shadow overwhelms the actual letterforms and reads as
+     doubled/crowded text. Scale both down to match the size ratio. */
+  -webkit-text-stroke: 1.4px var(--color-title-stroke);
+  text-shadow: 0 2px 0 var(--color-title-stroke);
 }
 
 .leaderboard-tabs {
