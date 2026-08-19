@@ -823,18 +823,26 @@
    see the comment on reportSize in ThreeRenderer.ts. Tucked into a corner,
    small and low-opacity, specifically so it doesn't obstruct the game view
    the way the (now-removed, root-caused) gesture-ratio panel did. */
-.hud-debug-panel.size-debug {
+.hud-debug-panel {
   position: absolute;
   bottom: 4px;
-  right: 4px;
   z-index: 30;
   background: rgba(0, 0, 0, 0.45);
-  color: rgba(255, 215, 0, 0.75);
   font-family: monospace;
   font-size: 9px;
   padding: 2px 5px;
   border-radius: 4px;
   pointer-events: none;
+}
+
+.hud-debug-panel.size-debug {
+  right: 4px;
+  color: rgba(255, 215, 0, 0.75);
+}
+
+.hud-debug-panel.gesture-debug {
+  left: 4px;
+  color: rgba(0, 255, 136, 0.85);
 }
 
 .hud-pose-badge.teal {

@@ -93,6 +93,18 @@ export default function HUD({ stats, debug, onTogglePause, isPaused }: Props) {
         </div>
       )}
 
+      {/* TEMPORARY diagnostic — jump/duck reported broken again after the
+          shoulder-width bh fix (eef57f8). Small corner readout this time
+          (not blocking the view like the previous round) — need real
+          numbers from the moment it misfires again before changing more
+          code blind. Remove once confirmed reliable. */}
+      {debug?.tracking && (
+        <div className="hud-debug-panel gesture-debug">
+          rise {debug.upwardRise.toFixed(3)}/.07{debug.jumpArmed ? '●' : ''} drop{' '}
+          {debug.dropRatio.toFixed(3)}/.09{debug.duckActive ? '●' : ''}
+        </div>
+      )}
+
 
       {/* Power-Ups bar */}
       <div className="hud-powerups">
