@@ -158,7 +158,7 @@
   line-height: 1.5;
   margin: 0;
   font-size: 15px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .high-score-badge {
@@ -231,7 +231,7 @@
   opacity: 0.85;
   font-size: 13px;
   max-width: 420px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .actions-row {
@@ -923,7 +923,7 @@
 .reason-text {
   color: #ffffff;
   font-size: 14px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .calories-hero-card {
@@ -1115,6 +1115,7 @@
   cursor: pointer;
   padding: 6px;
   text-decoration: underline;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .text-link:hover {
