@@ -967,8 +967,10 @@
 
 .reason-text {
   color: #ffffff;
-  font-size: 14px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 8px rgba(0, 0, 0, 0.5);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55), 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .calories-hero-card {
