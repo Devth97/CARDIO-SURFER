@@ -16,7 +16,6 @@ import {
 import type { GameAction } from '../game/types';
 
 // MediaPipe BlazePose landmark indices
-const NOSE = 0;
 const L_SHOULDER = 11;
 const R_SHOULDER = 12;
 const L_WRIST = 15;
@@ -215,15 +214,28 @@ export class PoseTracker {
     const cx = (landmarks[L_SHOULDER].x + landmarks[R_SHOULDER].x) / 2;
     const cy = (landmarks[L_SHOULDER].y + landmarks[R_SHOULDER].y) / 2;
 
-    const headToShoulder = ok(NOSE) ? Math.abs(cy - landmarks[NOSE].y) : 0.15;
-    const bh = Math.max(0.08, headToShoulder * 2.2);
+    // bh ("body height") is the shared scale that every ratio in this file
+    // is normalized against — jump/duck/hand-raise all divide a raw pixel
+    // displacement by it. It used to be derived from the NOSE landmark
+    // (head-to-shoulder distance), but the nose is far less reliably
+    // tracked than the shoulders (lighting, angle, occlusion) — a nose
+    // detection that's barely above MIN_LANDMARK_CONFIDENCE but badly
+    // mislocalized could collapse headToShoulder toward zero, which this
+    // shared denominator being close to zero then inflates EVERY ratio that
+    // divides by it into nonsense (confirmed live: rise/drop reading ~1.87,
+    // i.e. 187% of "body height" — physically impossible for a real human
+    // movement, only explainable by bh itself being wrong). Shoulder width
+    // is available with the exact same reliability guarantee already
+    // required just to reach this code (okShoulders, checked above), so it
+    // can't independently fail the way the nose can.
+    const shoulderWidth = Math.abs(landmarks[L_SHOULDER].x - landmarks[R_SHOULDER].x);
+    const bh = Math.max(0.08, shoulderWidth * 1.6);
 
     // Standing T-Pose Check (both arms horizontal) for baseline calibration
     if (ok(L_WRIST) && ok(R_WRIST)) {
       const lWristYDiff = Math.abs(landmarks[L_WRIST].y - cy);
       const rWristYDiff = Math.abs(landmarks[R_WRIST].y - cy);
       const wristSpan = Math.abs(landmarks[L_WRIST].x - landmarks[R_WRIST].x);
-      const shoulderWidth = Math.abs(landmarks[L_SHOULDER].x - landmarks[R_SHOULDER].x);
 
       const horizontalArms = lWristYDiff < 0.35 * bh && rWristYDiff < 0.35 * bh;
       const wideSpan = wristSpan > 1.2 * Math.max(0.06, shoulderWidth);

@@ -901,8 +901,9 @@ export class ThreeRenderer {
 
   private reportSize(renderWidth: number, renderHeight: number) {
     this.onSizeReport?.(
-      `container ${this.container.clientWidth}x${this.container.clientHeight} → ` +
-        `canvas ${renderWidth.toFixed(0)}x${renderHeight.toFixed(0)} dpr=${window.devicePixelRatio}`,
+      `${this.container.clientWidth}x${this.container.clientHeight}` +
+        `→${renderWidth.toFixed(0)}x${renderHeight.toFixed(0)}` +
+        `@${window.devicePixelRatio}`,
     );
   }
 
