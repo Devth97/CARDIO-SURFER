@@ -333,6 +333,12 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   max-width: 520px;
   width: 100%;
+  /* .practice-cards-grid below needs to react to how wide THIS box actually
+     renders, not the browser window — on a short/wide desktop window
+     .game-frame gets letterboxed down to a narrow phone-shaped column (see
+     .game-frame's own comment) while the window itself stays wide, so a
+     window-width media query never catches the resulting cramped cards. */
+  container-type: inline-size;
 }
 
 .calibration-box .subtitle {
@@ -364,6 +370,15 @@
   gap: 12px;
   width: 100%;
   margin: 6px 0;
+}
+
+/* Same fallback as the @media (max-width: 480px) rule further down, but
+   keyed off the actual rendered width of .calibration-box instead of the
+   browser window — see the container-type comment on .calibration-box. */
+@container (max-width: 440px) {
+  .practice-cards-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .practice-card {
