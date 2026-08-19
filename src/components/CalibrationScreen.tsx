@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Sparkles, Hand, ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Hand, ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 import type { PoseDebugState } from '../pose/PoseTracker';
 import { soundManager } from '../game/SoundManager';
 
@@ -58,7 +58,7 @@ export default function CalibrationScreen({ debug, onDone }: Props) {
         transition={{ duration: 0.3 }}
       >
         <div className="tpose-badge purple">
-          <Sparkles size={14} /> INTERACTIVE MOTION PRACTICE
+          INTERACTIVE MOTION PRACTICE
         </div>
 
         <h2 className="title small">PRACTICE YOUR MOVES LIVE</h2>
